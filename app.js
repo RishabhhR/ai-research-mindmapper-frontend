@@ -81,6 +81,7 @@ async function requestJson(path, options = {}) {
 
 async function runResearch(event) {
   event.preventDefault();
+  if (!await ensureAuth()) return;
   const topic = elements.topic.value.trim();
   if (state.mode !== "file" && !topic) {
     showToast("Add a topic or URL");
@@ -698,6 +699,7 @@ async function copySummary() {
 
 async function askQuestion(event) {
   event.preventDefault();
+  if (!await ensureAuth()) return;
   if (!state.current?.session_id) {
     showToast("Run backend research first");
     return;
@@ -976,8 +978,6 @@ function loadClerkScript() {
 }
 
 async function initClerkInstance() {
-  // v4: window.Clerk is a constructor (typeof === 'function')
-  // v5: window.Clerk is a pre-created singleton instance (typeof === 'object')
   if (typeof window.Clerk === "function") {
     const c = new window.Clerk(CLERK_KEY);
     await c.load();
@@ -987,34 +987,34 @@ async function initClerkInstance() {
   return window.Clerk;
 }
 
+async function ensureAuth() {
+  if (!clerk) return true;          // Clerk unavailable — allow action
+  if (clerk.user) return true;      // Already signed in
+  clerk.openSignIn();               // Pop Clerk modal
+  return false;
+}
+
 async function initAuth() {
-  const overlay   = document.getElementById("auth-overlay");
-  const appShell  = document.getElementById("app-shell");
   const userBtnEl = document.getElementById("user-button-container");
 
-  async function openApp() {
-    overlay.style.display  = "none";
-    appShell.style.display = "";
-    if (clerk && !userBtnEl._mounted) {
+  function mountUserBtn() {
+    if (!userBtnEl._mounted) {
+      userBtnEl.innerHTML = "";
       clerk.mountUserButton(userBtnEl);
       userBtnEl._mounted = true;
     }
-    await migrateLocalStorage();
-    await loadHistory();
   }
 
-  function showSignIn() {
-    appShell.style.display = "none";
-    overlay.style.display  = "flex";
-    const signInEl = document.getElementById("clerk-sign-in");
-    signInEl.innerHTML = "";
-    clerk.mountSignIn(signInEl);
+  function renderSignInBtn() {
+    userBtnEl._mounted = false;
+    userBtnEl.innerHTML = `<button class="ghost-button" style="width:100%;font-size:.8rem" id="sidebarSignIn">Sign in</button>`;
+    document.getElementById("sidebarSignIn").onclick = () => clerk?.openSignIn();
   }
 
   const loaded = await loadClerkScript();
   if (!loaded || !window.Clerk) {
-    console.warn("Clerk SDK unavailable — opening app without auth");
-    await openApp();
+    await migrateLocalStorage();
+    await loadHistory();
     return;
   }
 
@@ -1022,18 +1022,25 @@ async function initAuth() {
     clerk = await initClerkInstance();
 
     if (clerk.user) {
-      await openApp();
+      mountUserBtn();
+      await migrateLocalStorage();
+      await loadHistory();
     } else {
-      showSignIn();
+      renderSignInBtn();
     }
 
     clerk.addListener(async ({ user }) => {
-      if (user) await openApp();
-      else showSignIn();
+      if (user) {
+        mountUserBtn();
+        await loadHistory();
+      } else {
+        renderSignInBtn();
+      }
     });
   } catch (err) {
     console.error("Clerk init error:", err);
-    await openApp();
+    await migrateLocalStorage();
+    await loadHistory();
   }
 }
 

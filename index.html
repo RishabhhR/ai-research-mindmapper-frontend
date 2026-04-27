@@ -12,23 +12,6 @@
     />
     <link rel="stylesheet" href="./styles.css" />
     <style>
-      #auth-overlay {
-        position: fixed; inset: 0;
-        background: #100d09;
-        display: flex; align-items: center; justify-content: center;
-        z-index: 9999; padding: 1.5rem;
-      }
-      .auth-card {
-        background: #1e1710;
-        border: 1px solid rgba(255,160,60,.18);
-        border-radius: 18px;
-        padding: 2.5rem 2rem;
-        width: 100%; max-width: 460px;
-        display: flex; flex-direction: column; gap: 1.25rem;
-      }
-      .auth-brand { display: flex; align-items: center; gap: 1rem; }
-      .auth-brand h1 { font-size: 1.15rem; margin: 0; color: #f5ebe0; }
-      .auth-tagline { font-size: 0.875rem; color: rgba(245,235,224,.55); line-height: 1.6; margin: 0; }
       #user-button-container {
         padding: 1rem 1.5rem;
         border-top: 1px solid rgba(255,160,60,.1);
@@ -37,21 +20,7 @@
     </style>
   </head>
   <body>
-    <div id="auth-overlay" style="display:flex;">
-      <div class="auth-card">
-        <div class="auth-brand">
-          <div class="brand-mark">RM</div>
-          <div>
-            <p class="eyebrow" style="margin:0 0 .15rem;">Your Research Workspace</p>
-            <h1>Research Mindmapper</h1>
-          </div>
-        </div>
-        <p class="auth-tagline">Sign in to access your personal research maps. Your data stays private and is never shared.</p>
-        <div id="clerk-sign-in"><p style="color:rgba(245,235,224,.4);font-size:.85rem;">Loading sign-in…</p></div>
-      </div>
-    </div>
-
-    <div class="app-shell" id="app-shell" style="display:none;">
+    <div class="app-shell" id="app-shell">
       <aside class="sidebar" aria-label="Research history">
         <div class="brand-block">
           <div class="brand-mark">RM</div>
