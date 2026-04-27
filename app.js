@@ -953,42 +953,52 @@ async function initAuth() {
   const appShell  = document.getElementById("app-shell");
   const userBtnEl = document.getElementById("user-button-container");
 
-  clerk = new window.Clerk(CLERK_KEY);
-  await clerk.load();
-
-  function showApp() {
+  async function openApp() {
     overlay.style.display  = "none";
     appShell.style.display = "";
-    if (!userBtnEl._mounted) {
+    if (clerk && !userBtnEl._mounted) {
       clerk.mountUserButton(userBtnEl);
       userBtnEl._mounted = true;
     }
-  }
-
-  function showAuth() {
-    appShell.style.display = "none";
-    overlay.style.display  = "flex";
-    document.getElementById("clerk-sign-in").innerHTML = "";
-    clerk.mountSignIn(document.getElementById("clerk-sign-in"));
-  }
-
-  if (clerk.user) {
-    showApp();
     await migrateLocalStorage();
     await loadHistory();
-  } else {
-    showAuth();
   }
 
-  clerk.addListener(async ({ user }) => {
-    if (user) {
-      showApp();
-      await migrateLocalStorage();
-      await loadHistory();
+  function showSignIn() {
+    appShell.style.display = "none";
+    overlay.style.display  = "flex";
+    const signInEl = document.getElementById("clerk-sign-in");
+    signInEl.innerHTML = "";
+    clerk.mountSignIn(signInEl);
+  }
+
+  if (!window.Clerk) {
+    console.warn("Clerk SDK unavailable — opening app without auth");
+    await openApp();
+    return;
+  }
+
+  try {
+    clerk = new window.Clerk(CLERK_KEY);
+    await clerk.load();
+
+    if (clerk.user) {
+      await openApp();
     } else {
-      showAuth();
+      showSignIn();
     }
-  });
+
+    clerk.addListener(async ({ user }) => {
+      if (user) {
+        await openApp();
+      } else {
+        showSignIn();
+      }
+    });
+  } catch (err) {
+    console.error("Clerk init error:", err);
+    await openApp();
+  }
 }
 
 setMode("query");
