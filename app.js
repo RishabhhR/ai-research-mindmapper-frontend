@@ -950,47 +950,17 @@ elements.navItems.forEach((item) => {
     document.querySelector(map[target]).scrollIntoView({ behavior: "smooth", block: "start" });
   });
 });
-function loadClerkScript() {
-  return new Promise((resolve) => {
-    if (window.Clerk) { resolve(true); return; }
-
-    let settled = false;
-    function done(val) { if (!settled) { settled = true; resolve(val); } }
-
-    // Primary: official Clerk CDN derived from publishable key domain
-    const domain = atob(CLERK_KEY.split("_")[2].replace(/-/g,"+").replace(/_/g,"/") + "==").replace(/\$$/,"");
-    const s = document.createElement("script");
-    s.setAttribute("data-clerk-publishable-key", CLERK_KEY);
-    s.src = `https://${domain}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`;
-    s.crossOrigin = "anonymous";
-    s.onload  = () => setTimeout(() => done(!!window.Clerk), 150);
-    s.onerror = () => {
-      // Fallback: jsdelivr pinned to v4 (uses constructor API)
-      const fb = document.createElement("script");
-      fb.src = "https://cdn.jsdelivr.net/npm/@clerk/clerk-js@4/dist/clerk.browser.js";
-      fb.onload  = () => setTimeout(() => done(!!window.Clerk), 150);
-      fb.onerror = () => done(false);
-      document.body.appendChild(fb);
-    };
-    document.body.appendChild(s);
-    setTimeout(() => done(!!window.Clerk), 12000);
-  });
-}
-
 async function initClerkInstance() {
-  if (typeof window.Clerk === "function") {
-    const c = new window.Clerk(CLERK_KEY);
-    await c.load();
-    return c;
-  }
-  await window.Clerk.load({ publishableKey: CLERK_KEY });
-  return window.Clerk;
+  // v4 (loaded via <script> tag): window.Clerk is a constructor
+  const c = new window.Clerk(CLERK_KEY);
+  await c.load();
+  return c;
 }
 
 async function ensureAuth() {
-  if (!clerk) return true;          // Clerk unavailable — allow action
-  if (clerk.user) return true;      // Already signed in
-  clerk.openSignIn();               // Pop Clerk modal
+  if (clerk && clerk.user) return true;
+  if (clerk) { clerk.openSignIn(); return false; }
+  showToast("Sign-in unavailable — reload the page and try again.");
   return false;
 }
 
@@ -1011,8 +981,8 @@ async function initAuth() {
     document.getElementById("sidebarSignIn").onclick = () => clerk?.openSignIn();
   }
 
-  const loaded = await loadClerkScript();
-  if (!loaded || !window.Clerk) {
+  if (!window.Clerk) {
+    console.warn("Clerk SDK not available — auth disabled");
     await migrateLocalStorage();
     await loadHistory();
     return;
