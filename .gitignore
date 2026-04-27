@@ -1,0 +1,4 @@
+.vercel/
+.DS_Store
+stitch_screens/
+download_screens.sh

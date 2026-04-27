@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Research Mindmapper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Research history">
+        <div class="brand-block">
+          <div class="brand-mark">RM</div>
+          <div>
+            <p class="eyebrow">Workspace</p>
+            <h1>Research Mindmapper</h1>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Primary navigation">
+          <button class="nav-item active" type="button" data-view="research">
+            <span class="nav-dot"></span>
+            Research
+          </button>
+          <button class="nav-item" type="button" data-view="sources">
+            <span class="nav-dot"></span>
+            Sources
+          </button>
+          <button class="nav-item" type="button" data-view="insights">
+            <span class="nav-dot"></span>
+            Insights
+          </button>
+          <button class="nav-item" type="button" data-view="history">
+            <span class="nav-dot"></span>
+            History
+          </button>
+        </nav>
+
+        <section class="history-panel" aria-labelledby="history-heading">
+          <div class="panel-heading">
+            <p class="eyebrow">Saved</p>
+            <button class="icon-button" type="button" id="clearHistory" aria-label="Clear history">x</button>
+          </div>
+          <h2 id="history-heading">Recent maps</h2>
+          <div id="historyList" class="history-list"></div>
+        </section>
+      </aside>
+
+      <main class="main-content">
+        <section class="command-band" aria-labelledby="research-title">
+          <div class="command-copy">
+            <p class="eyebrow">AI Research Agent</p>
+            <h2 id="research-title">Turn broad questions into structured maps.</h2>
+            <p>
+              Break topics into concepts, sources, trade-offs, and next questions with a
+              research flow that stays compact enough to scan.
+            </p>
+          </div>
+
+          <form class="research-form" id="researchForm">
+            <div class="mode-tabs" role="tablist" aria-label="Input type">
+              <button class="mode-tab active" type="button" data-mode="query">
+                <span>Search query</span>
+              </button>
+              <button class="mode-tab" type="button" data-mode="url">
+                <span>Paste link</span>
+              </button>
+              <button class="mode-tab" type="button" data-mode="file">
+                <span>Upload doc</span>
+              </button>
+            </div>
+
+            <label class="input-label" for="topicInput">Research topic, webpage, or video link</label>
+            <div class="topic-row">
+              <input
+                id="topicInput"
+                name="topic"
+                type="text"
+                value="How can AI agents improve product research workflows?"
+                autocomplete="off"
+              />
+              <input id="fileInput" class="file-input" type="file" accept=".txt,.pdf,text/plain,application/pdf" />
+              <button class="primary-button" type="submit">Research</button>
+            </div>
+
+            <div class="controls-grid">
+              <label>
+                Depth
+                <select id="depthSelect" name="depth">
+                  <option>Detailed</option>
+                  <option>Basic</option>
+                  <option>Expert</option>
+                </select>
+              </label>
+              <label>
+                Output
+                <select id="outputSelect" name="output">
+                  <option>Mindmap</option>
+                  <option>Report</option>
+                  <option>Comparison</option>
+                  <option>Bullets</option>
+                </select>
+              </label>
+              <label>
+                Source mix
+                <select id="sourceSelect" name="source">
+                  <option>Academic + web</option>
+                  <option>Market signals</option>
+                  <option>Internal notes</option>
+                </select>
+              </label>
+            </div>
+          </form>
+        </section>
+
+        <section class="status-strip" aria-label="Research progress">
+          <div class="status-step active" data-step="scope">
+            <span>1</span>
+            Scope
+          </div>
+          <div class="status-step" data-step="sources">
+            <span>2</span>
+            Sources
+          </div>
+          <div class="status-step" data-step="synthesis">
+            <span>3</span>
+            Synthesis
+          </div>
+          <div class="status-step" data-step="map">
+            <span>4</span>
+            Map
+          </div>
+        </section>
+
+        <section class="qa-panel" aria-labelledby="qa-heading">
+          <div class="section-header compact">
+            <div>
+              <h2 id="qa-heading">Follow-up questions</h2>
+            </div>
+            <span class="count-pill" id="sessionBadge">No session</span>
+          </div>
+          <form class="qa-form" id="qaForm">
+            <input id="questionInput" type="text" placeholder="Ask a question about the evidence or topic..." autocomplete="off" />
+            <button class="ghost-button" type="submit">Ask</button>
+          </form>
+          <div id="answerPanel" class="answer-panel"></div>
+        </section>
+
+        <section class="workspace-grid">
+          <section class="map-panel" aria-labelledby="map-heading">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Interactive map</p>
+                <h2 id="map-heading">Concept structure</h2>
+              </div>
+              <div class="header-actions">
+                <button class="icon-button" type="button" id="zoomOut" title="Zoom Out">-</button>
+                <button class="icon-button" type="button" id="zoomReset" title="Reset Zoom">0</button>
+                <button class="icon-button" type="button" id="zoomIn" title="Zoom In">+</button>
+                <button class="ghost-button" type="button" id="saveMap">Save</button>
+                <button class="ghost-button" type="button" id="copySummary">Copy</button>
+              </div>
+            </div>
+            <div class="mindmap-canvas" id="mindmapCanvas">
+              <div class="mindmap-workspace" id="mindmapWorkspace"></div>
+            </div>
+          </section>
+
+          <aside class="insight-panel" aria-labelledby="insight-heading">
+            <div class="section-header compact">
+              <div>
+                <p class="eyebrow">Synthesis</p>
+                <h2 id="insight-heading">Key insights</h2>
+              </div>
+              <span class="quality-score" id="qualityScore">86</span>
+            </div>
+            <div id="insightList" class="insight-list"></div>
+          </aside>
+        </section>
+
+        <section class="detail-grid">
+          <section class="source-panel" aria-labelledby="sources-heading">
+            <div class="section-header compact">
+              <div>
+                <p class="eyebrow">Sources found</p>
+                <h2 id="sources-heading">Evidence stack</h2>
+              </div>
+              <span class="count-pill" id="sourceCount">6 sources</span>
+            </div>
+            <div id="sourceList" class="source-list"></div>
+          </section>
+
+          <section class="tradeoff-panel" aria-labelledby="tradeoff-heading">
+            <div class="section-header compact">
+              <div>
+                <p class="eyebrow">Debates</p>
+                <h2 id="tradeoff-heading">Trade-offs</h2>
+              </div>
+            </div>
+            <div id="tradeoffList" class="tradeoff-list"></div>
+          </section>
+        </section>
+
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>
