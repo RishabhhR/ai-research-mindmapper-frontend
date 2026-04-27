@@ -951,14 +951,40 @@ elements.navItems.forEach((item) => {
 function loadClerkScript() {
   return new Promise((resolve) => {
     if (window.Clerk) { resolve(true); return; }
+
+    let settled = false;
+    function done(val) { if (!settled) { settled = true; resolve(val); } }
+
+    // Primary: official Clerk CDN derived from publishable key domain
+    const domain = atob(CLERK_KEY.split("_")[2].replace(/-/g,"+").replace(/_/g,"/") + "==").replace(/\$$/,"");
     const s = document.createElement("script");
-    s.src = "https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js";
+    s.setAttribute("data-clerk-publishable-key", CLERK_KEY);
+    s.src = `https://${domain}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`;
     s.crossOrigin = "anonymous";
-    s.onload  = () => resolve(true);
-    s.onerror = () => resolve(false);
+    s.onload  = () => setTimeout(() => done(!!window.Clerk), 150);
+    s.onerror = () => {
+      // Fallback: jsdelivr pinned to v4 (uses constructor API)
+      const fb = document.createElement("script");
+      fb.src = "https://cdn.jsdelivr.net/npm/@clerk/clerk-js@4/dist/clerk.browser.js";
+      fb.onload  = () => setTimeout(() => done(!!window.Clerk), 150);
+      fb.onerror = () => done(false);
+      document.body.appendChild(fb);
+    };
     document.body.appendChild(s);
-    setTimeout(() => resolve(!!window.Clerk), 8000);
+    setTimeout(() => done(!!window.Clerk), 12000);
   });
+}
+
+async function initClerkInstance() {
+  // v4: window.Clerk is a constructor (typeof === 'function')
+  // v5: window.Clerk is a pre-created singleton instance (typeof === 'object')
+  if (typeof window.Clerk === "function") {
+    const c = new window.Clerk(CLERK_KEY);
+    await c.load();
+    return c;
+  }
+  await window.Clerk.load({ publishableKey: CLERK_KEY });
+  return window.Clerk;
 }
 
 async function initAuth() {
@@ -987,14 +1013,13 @@ async function initAuth() {
 
   const loaded = await loadClerkScript();
   if (!loaded || !window.Clerk) {
-    console.warn("Clerk SDK failed to load — opening app without auth");
+    console.warn("Clerk SDK unavailable — opening app without auth");
     await openApp();
     return;
   }
 
   try {
-    clerk = new window.Clerk(CLERK_KEY);
-    await clerk.load();
+    clerk = await initClerkInstance();
 
     if (clerk.user) {
       await openApp();
@@ -1003,11 +1028,8 @@ async function initAuth() {
     }
 
     clerk.addListener(async ({ user }) => {
-      if (user) {
-        await openApp();
-      } else {
-        showSignIn();
-      }
+      if (user) await openApp();
+      else showSignIn();
     });
   } catch (err) {
     console.error("Clerk init error:", err);
