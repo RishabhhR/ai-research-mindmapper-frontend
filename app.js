@@ -538,7 +538,13 @@ function renderHistory() {
       try {
         setLoading("Loading map...");
         const data = await requestJson(`/api/sessions/${id}`);
-        loadResearch(data.session, false);
+        const sessionRaw = {
+          ...data.session,
+          session_id: data.session.id,
+          nodes: data.session.mindmap || [],
+          sources: data.sources || [],
+        };
+        loadResearch(normalizeResearch(sessionRaw), false);
         clearLoading();
         showToast("Map loaded from database");
       } catch (err) {
