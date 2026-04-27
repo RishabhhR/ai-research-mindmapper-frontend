@@ -1,4 +1,7 @@
 const API_BASE = "https://mindmapper-api-mu.vercel.app";
+const CLERK_KEY = "pk_test_c2tpbGxlZC1vcmNhLTc4LmNsZXJrLmFjY291bnRzLmRldiQ";
+
+let clerk = null;
 
 const state = {
   current: null,
@@ -61,7 +64,14 @@ function clearLoading() {
 }
 
 async function requestJson(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, options);
+  const token = clerk ? await clerk.session?.getToken() : null;
+  const response = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
+    },
+  });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(data.detail || data.message || `Request failed: ${response.status}`);
@@ -938,7 +948,49 @@ elements.navItems.forEach((item) => {
     document.querySelector(map[target]).scrollIntoView({ behavior: "smooth", block: "start" });
   });
 });
-migrateLocalStorage().then(() => loadHistory());
+async function initAuth() {
+  const overlay   = document.getElementById("auth-overlay");
+  const appShell  = document.getElementById("app-shell");
+  const userBtnEl = document.getElementById("user-button-container");
+
+  clerk = new window.Clerk(CLERK_KEY);
+  await clerk.load();
+
+  function showApp() {
+    overlay.style.display  = "none";
+    appShell.style.display = "";
+    if (!userBtnEl._mounted) {
+      clerk.mountUserButton(userBtnEl);
+      userBtnEl._mounted = true;
+    }
+  }
+
+  function showAuth() {
+    appShell.style.display = "none";
+    overlay.style.display  = "flex";
+    document.getElementById("clerk-sign-in").innerHTML = "";
+    clerk.mountSignIn(document.getElementById("clerk-sign-in"));
+  }
+
+  if (clerk.user) {
+    showApp();
+    await migrateLocalStorage();
+    await loadHistory();
+  } else {
+    showAuth();
+  }
+
+  clerk.addListener(async ({ user }) => {
+    if (user) {
+      showApp();
+      await migrateLocalStorage();
+      await loadHistory();
+    } else {
+      showAuth();
+    }
+  });
+}
+
 setMode("query");
 loadResearch({
   id: "welcome",
@@ -965,3 +1017,5 @@ loadResearch({
   ],
   createdAt: new Date().toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
 }, false);
+
+initAuth();
