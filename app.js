@@ -948,6 +948,19 @@ elements.navItems.forEach((item) => {
     document.querySelector(map[target]).scrollIntoView({ behavior: "smooth", block: "start" });
   });
 });
+function loadClerkScript() {
+  return new Promise((resolve) => {
+    if (window.Clerk) { resolve(true); return; }
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js";
+    s.crossOrigin = "anonymous";
+    s.onload  = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+    setTimeout(() => resolve(!!window.Clerk), 8000);
+  });
+}
+
 async function initAuth() {
   const overlay   = document.getElementById("auth-overlay");
   const appShell  = document.getElementById("app-shell");
@@ -972,8 +985,9 @@ async function initAuth() {
     clerk.mountSignIn(signInEl);
   }
 
-  if (!window.Clerk) {
-    console.warn("Clerk SDK unavailable — opening app without auth");
+  const loaded = await loadClerkScript();
+  if (!loaded || !window.Clerk) {
+    console.warn("Clerk SDK failed to load — opening app without auth");
     await openApp();
     return;
   }
