@@ -483,79 +483,191 @@ function selectNode(id, node, title, description = "", provenance = "ai_synthesi
 }
 
 const _modal = {
-  el: document.getElementById("nodeModal"),
-  title: document.getElementById("modalTitle"),
-  badge: document.getElementById("modalBadge"),
+  el:          document.getElementById("nodeModal"),
+  panel:       document.querySelector("#nodeModal .node-modal"),
+  title:       document.getElementById("modalTitle"),
+  badge:       document.getElementById("modalBadge"),
   description: document.getElementById("modalDescription"),
-  sources: document.getElementById("modalSources"),
-  close: document.getElementById("modalClose"),
-  ask: document.getElementById("modalAsk"),
-  expand: document.getElementById("modalExpand"),
+  sources:     document.getElementById("modalSources"),
+  close:       document.getElementById("modalClose"),
+  ask:         document.getElementById("modalAsk"),
+  expand:      document.getElementById("modalExpand"),
+  prev:        document.getElementById("modalPrev"),
+  next:        document.getElementById("modalNext"),
+  counter:     document.getElementById("modalCounter"),
+  qa:          document.getElementById("modalQa"),
+  qaAnswers:   document.getElementById("modalQaAnswers"),
+  qaForm:      document.getElementById("modalQaForm"),
+  qaInput:     document.getElementById("modalQaInput"),
   _currentId: null,
   _currentTitle: null,
+  _qaOpen: false,
 };
 
 const PROVENANCE_LABELS = {
   source_grounded: "Source-backed",
-  web_enriched: "Web-enriched",
-  ai_synthesized: "AI synthesis",
+  web_enriched:    "Web-enriched",
+  ai_synthesized:  "AI synthesis",
 };
 
 function openNodeDetail(id, title, description, provenance) {
-  _modal._currentId = id;
+  _modal._currentId    = id;
   _modal._currentTitle = title;
+  _modal._qaOpen       = false;
 
-  _modal.title.textContent = title;
-  _modal.badge.textContent = PROVENANCE_LABELS[provenance] || provenance;
-  _modal.badge.className = `node-modal-badge ${provenance}`;
+  _modal.title.textContent       = title;
+  _modal.badge.textContent       = PROVENANCE_LABELS[provenance] || provenance;
+  _modal.badge.className         = `node-modal-badge ${provenance}`;
   _modal.description.textContent = description || "No description available.";
 
-  // find related sources by keyword match
-  const terms = title.toLowerCase().split(/\W+/).filter(w => w.length > 3);
+  // nav counter
+  const total = state.current?.nodes?.length || 0;
+  const idx   = Number(id);
+  _modal.counter.textContent  = total ? `${idx + 1} / ${total}` : "";
+  _modal.prev.disabled        = idx <= 0;
+  _modal.next.disabled        = idx >= total - 1;
+
+  // related sources
+  const terms   = title.toLowerCase().split(/\W+/).filter(w => w.length > 3);
   const related = (state.current?.sources || []).filter(([srcTitle, , , body]) => {
     const hay = `${srcTitle} ${body}`.toLowerCase();
     return terms.some(t => hay.includes(t));
   }).slice(0, 3);
 
-  if (related.length) {
-    _modal.sources.innerHTML = `
-      <p class="node-modal-sources-heading">Related sources</p>
-      ${related.map(([srcTitle, type, , , , url]) => `
-        <div class="node-modal-source-chip">
-          <span class="node-modal-source-dot"></span>
-          <span>${url
-            ? `<a href="${escapeAttr(url)}" target="_blank" rel="noreferrer">${escapeHtml(srcTitle)}</a>`
-            : escapeHtml(srcTitle)}
-            <span style="color:var(--text-muted);font-size:.75rem"> · ${escapeHtml(type)}</span>
-          </span>
-        </div>`).join("")}`;
-  } else {
-    _modal.sources.innerHTML = "";
-  }
+  _modal.sources.innerHTML = related.length
+    ? `<p class="node-modal-sources-heading">Related sources</p>
+       ${related.map(([srcTitle, type, , , , url]) => `
+         <div class="node-modal-source-chip">
+           <span class="node-modal-source-dot"></span>
+           <span>${url
+             ? `<a href="${escapeAttr(url)}" target="_blank" rel="noreferrer">${escapeHtml(srcTitle)}</a>`
+             : escapeHtml(srcTitle)}
+             <span style="color:var(--text-muted);font-size:.75rem"> · ${escapeHtml(type)}</span>
+           </span>
+         </div>`).join("")}`
+    : "";
+
+  // reset inline Q&A
+  _modal.qa.hidden        = true;
+  _modal.qaAnswers.innerHTML = "";
+  _modal.qaInput.value    = "";
+  _modal.ask.classList.remove("active");
 
   _modal.el.hidden = false;
+  _modal.el.classList.remove("is-closing");
   _modal.close.focus();
 }
 
 function closeNodeDetail() {
-  _modal.el.hidden = true;
-  state.selectedNode = null;
-  document.querySelectorAll(".map-node").forEach((n) => n.classList.remove("selected"));
+  _modal.el.classList.add("is-closing");
+  setTimeout(() => {
+    _modal.el.hidden = true;
+    _modal.el.classList.remove("is-closing");
+    state.selectedNode = null;
+    document.querySelectorAll(".map-node").forEach(n => n.classList.remove("selected"));
+  }, 190);
 }
 
-_modal.close.addEventListener("click", closeNodeDetail);
-_modal.el.addEventListener("click", (e) => { if (e.target === _modal.el) closeNodeDetail(); });
+// Nav between nodes
+function navigateModal(delta) {
+  const nodes = state.current?.nodes;
+  if (!nodes) return;
+  const next = Number(_modal._currentId) + delta;
+  if (next < 0 || next >= nodes.length) return;
+  const [title, description, , , provenance] = nodes[next];
+  const nodeEl = document.querySelector(`.map-node[data-id="${next}"]`);
+  document.querySelectorAll(".map-node").forEach(n => n.classList.remove("selected"));
+  nodeEl?.classList.add("selected");
+  openNodeDetail(next, title, description, provenance);
+}
 
+_modal.prev.addEventListener("click", () => navigateModal(-1));
+_modal.next.addEventListener("click", () => navigateModal(1));
+_modal.close.addEventListener("click", closeNodeDetail);
+_modal.el.addEventListener("click", e => { if (e.target === _modal.el) closeNodeDetail(); });
+
+// Toggle inline Q&A
 _modal.ask.addEventListener("click", () => {
-  closeNodeDetail();
-  elements.question.value = `Tell me more about: ${_modal._currentTitle}`;
-  elements.question.focus();
-  document.querySelector(".qa-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+  _modal._qaOpen = !_modal._qaOpen;
+  _modal.qa.hidden = !_modal._qaOpen;
+  _modal.ask.classList.toggle("active", _modal._qaOpen);
+  if (_modal._qaOpen) {
+    _modal.qaInput.focus();
+    if (_modal.qaAnswers.children.length === 0) {
+      addQaBubble("assistant",
+        `What would you like to know about <strong>${escapeHtml(_modal._currentTitle)}</strong>?`);
+    }
+  }
 });
+
+// Inline Q&A submit
+_modal.qaForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  const question = _modal.qaInput.value.trim();
+  if (!question) return;
+  _modal.qaInput.value = "";
+
+  addQaBubble("user", escapeHtml(question));
+  const dotsEl = addTypingDots();
+
+  try {
+    let data;
+    if (state.current?.session_id) {
+      data = await requestJson(`/api/sessions/${state.current.session_id}/ask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+    } else {
+      data = { answer: "Run a research query first to get session-backed answers.", provenance: "ai_synthesized", citations: [] };
+    }
+    dotsEl.remove();
+    const bubble = addQaBubble("assistant", escapeHtml(data.answer || "No answer returned."), data.provenance);
+    if (data.citations?.length) {
+      const cites = document.createElement("div");
+      cites.style.cssText = "font-size:.75rem;color:var(--text-muted);padding:2px 4px;";
+      cites.innerHTML = data.citations.slice(0, 2).map(c =>
+        c.url ? `<a href="${escapeAttr(c.url)}" target="_blank" rel="noreferrer" style="color:var(--secondary)">${escapeHtml(c.title || "Source")}</a>`
+              : escapeHtml(c.title || "")
+      ).join(" · ");
+      bubble.appendChild(cites);
+    }
+  } catch (err) {
+    dotsEl.remove();
+    addQaBubble("assistant", `⚠ ${escapeHtml(err.message)}`);
+  }
+});
+
+function addQaBubble(role, html, provenance) {
+  const wrap = document.createElement("div");
+  wrap.className = `modal-qa-bubble ${role}`;
+  const text = document.createElement("div");
+  text.className = "bubble-text";
+  text.innerHTML = html;
+  wrap.appendChild(text);
+  if (provenance && role === "assistant") {
+    const b = document.createElement("span");
+    b.className = "bubble-badge";
+    b.textContent = PROVENANCE_LABELS[provenance] || provenance;
+    wrap.appendChild(b);
+  }
+  _modal.qaAnswers.appendChild(wrap);
+  _modal.qaAnswers.scrollTop = _modal.qaAnswers.scrollHeight;
+  return wrap;
+}
+
+function addTypingDots() {
+  const wrap = document.createElement("div");
+  wrap.className = "modal-qa-bubble assistant";
+  wrap.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div>`;
+  _modal.qaAnswers.appendChild(wrap);
+  _modal.qaAnswers.scrollTop = _modal.qaAnswers.scrollHeight;
+  return wrap;
+}
 
 _modal.expand.addEventListener("click", () => {
   closeNodeDetail();
-  expandNode(_modal._currentId, _modal._currentTitle);
+  setTimeout(() => expandNode(_modal._currentId, _modal._currentTitle), 210);
 });
 
 function renderInsights(research) {

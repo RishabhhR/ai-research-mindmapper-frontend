@@ -224,17 +224,31 @@
 
     <div class="node-modal-backdrop" id="nodeModal" hidden>
       <div class="node-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+
         <div class="node-modal-header">
           <div class="node-modal-meta">
             <span class="node-modal-badge" id="modalBadge"></span>
             <h2 class="node-modal-title" id="modalTitle"></h2>
           </div>
-          <button class="node-modal-close" id="modalClose" aria-label="Close">✕</button>
+          <div class="node-modal-nav">
+            <button class="node-nav-btn" id="modalPrev" aria-label="Previous node">&#8592;</button>
+            <span class="node-nav-counter" id="modalCounter"></span>
+            <button class="node-nav-btn" id="modalNext" aria-label="Next node">&#8594;</button>
+            <button class="node-modal-close" id="modalClose" aria-label="Close">✕</button>
+          </div>
         </div>
 
-        <div class="node-modal-body">
+        <div class="node-modal-body" id="modalBody">
           <p class="node-modal-description" id="modalDescription"></p>
           <div class="node-modal-sources" id="modalSources"></div>
+        </div>
+
+        <div class="node-modal-qa" id="modalQa" hidden>
+          <div class="modal-qa-answers" id="modalQaAnswers"></div>
+          <form class="modal-qa-form" id="modalQaForm">
+            <input class="modal-qa-input" id="modalQaInput" type="text" placeholder="Ask a follow-up…" autocomplete="off" />
+            <button class="modal-qa-send" type="submit" aria-label="Send">&#9654;</button>
+          </form>
         </div>
 
         <div class="node-modal-footer">
