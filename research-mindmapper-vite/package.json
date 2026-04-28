@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@clerk/clerk-js": "^6.7.7",
+    "@vercel/analytics": "^2.0.1",
     "vite": "^5.4.21"
   }
 }

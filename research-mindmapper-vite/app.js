@@ -1,4 +1,6 @@
 import { Clerk } from "@clerk/clerk-js";
+import { inject } from "@vercel/analytics";
+inject();
 
 const API_BASE = "https://mindmapper-api-mu.vercel.app";
 const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
