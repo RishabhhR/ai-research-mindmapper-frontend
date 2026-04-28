@@ -988,7 +988,7 @@ async function initClerkInstance() {
 
 async function ensureAuth() {
   if (clerk && clerk.user) return true;
-  if (clerk) { clerk.openSignIn(); return false; }
+  if (clerk) { clerk.openSignIn({ afterSignInUrl: window.location.href, afterSignUpUrl: window.location.href }); return false; }
   showToast("Sign-in unavailable — reload the page and try again.");
   return false;
 }
@@ -1007,7 +1007,7 @@ async function initAuth() {
   function renderSignInBtn() {
     userBtnEl._mounted = false;
     userBtnEl.innerHTML = `<button class="ghost-button" style="width:100%;font-size:.8rem" id="sidebarSignIn">Sign in</button>`;
-    document.getElementById("sidebarSignIn").onclick = () => clerk?.openSignIn();
+    document.getElementById("sidebarSignIn").onclick = () => clerk?.openSignIn({ afterSignInUrl: window.location.href, afterSignUpUrl: window.location.href });
   }
 
   try {
