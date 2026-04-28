@@ -952,25 +952,10 @@ elements.navItems.forEach((item) => {
 });
 async function initClerkInstance() {
   if (!CLERK_KEY) {
-    throw new Error("Add your VITE_CLERK_PUBLISHABLE_KEY to the .env file");
+    throw new Error("VITE_CLERK_PUBLISHABLE_KEY is not set");
   }
-
-  // Load the @clerk/ui bundle dynamically
-  const clerkDomain = atob(CLERK_KEY.split("_")[2]).slice(0, -1);
-  await new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = `https://${clerkDomain}/npm/@clerk/ui@1/dist/ui.browser.js`;
-    script.async = true;
-    script.crossOrigin = "anonymous";
-    script.onload = resolve;
-    script.onerror = () => reject(new Error("Failed to load @clerk/ui bundle"));
-    document.head.appendChild(script);
-  });
-
   const c = new Clerk(CLERK_KEY);
-  await c.load({
-    ui: { ClerkUI: window.__internal_ClerkUI }
-  });
+  await c.load();
   return c;
 }
 
