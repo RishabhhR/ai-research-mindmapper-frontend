@@ -220,6 +220,29 @@
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <div class="node-modal-backdrop" id="nodeModal" hidden>
+      <div class="node-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="node-modal-header">
+          <div class="node-modal-meta">
+            <span class="node-modal-badge" id="modalBadge"></span>
+            <h2 class="node-modal-title" id="modalTitle"></h2>
+          </div>
+          <button class="node-modal-close" id="modalClose" aria-label="Close">✕</button>
+        </div>
+
+        <div class="node-modal-body">
+          <p class="node-modal-description" id="modalDescription"></p>
+          <div class="node-modal-sources" id="modalSources"></div>
+        </div>
+
+        <div class="node-modal-footer">
+          <button class="ghost-button" id="modalAsk">Ask about this</button>
+          <button class="ghost-button" id="modalExpand">Explore deeper</button>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="./app.js"></script>
   </body>
 </html>

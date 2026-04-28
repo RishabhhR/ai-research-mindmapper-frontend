@@ -382,7 +382,7 @@ function createNode(id, title, description, x, y, isRoot, provenance) {
       expandNode(id, title);
       return;
     }
-    selectNode(id, node, title);
+    selectNode(id, node, title, description, provenance);
   });
   return node;
 }
@@ -461,12 +461,88 @@ async function expandNode(id, title) {
   }
 }
 
-function selectNode(id, node, title) {
+function selectNode(id, node, title, description = "", provenance = "ai_synthesized") {
   state.selectedNode = id;
   document.querySelectorAll(".map-node").forEach((item) => item.classList.remove("selected"));
   node.classList.add("selected");
-  showToast(`${title} selected`);
+  openNodeDetail(id, title, description, provenance);
 }
+
+const _modal = {
+  el: document.getElementById("nodeModal"),
+  title: document.getElementById("modalTitle"),
+  badge: document.getElementById("modalBadge"),
+  description: document.getElementById("modalDescription"),
+  sources: document.getElementById("modalSources"),
+  close: document.getElementById("modalClose"),
+  ask: document.getElementById("modalAsk"),
+  expand: document.getElementById("modalExpand"),
+  _currentId: null,
+  _currentTitle: null,
+};
+
+const PROVENANCE_LABELS = {
+  source_grounded: "Source-backed",
+  web_enriched: "Web-enriched",
+  ai_synthesized: "AI synthesis",
+};
+
+function openNodeDetail(id, title, description, provenance) {
+  _modal._currentId = id;
+  _modal._currentTitle = title;
+
+  _modal.title.textContent = title;
+  _modal.badge.textContent = PROVENANCE_LABELS[provenance] || provenance;
+  _modal.badge.className = `node-modal-badge ${provenance}`;
+  _modal.description.textContent = description || "No description available.";
+
+  // find related sources by keyword match
+  const terms = title.toLowerCase().split(/\W+/).filter(w => w.length > 3);
+  const related = (state.current?.sources || []).filter(([srcTitle, , , body]) => {
+    const hay = `${srcTitle} ${body}`.toLowerCase();
+    return terms.some(t => hay.includes(t));
+  }).slice(0, 3);
+
+  if (related.length) {
+    _modal.sources.innerHTML = `
+      <p class="node-modal-sources-heading">Related sources</p>
+      ${related.map(([srcTitle, type, , , , url]) => `
+        <div class="node-modal-source-chip">
+          <span class="node-modal-source-dot"></span>
+          <span>${url
+            ? `<a href="${escapeAttr(url)}" target="_blank" rel="noreferrer">${escapeHtml(srcTitle)}</a>`
+            : escapeHtml(srcTitle)}
+            <span style="color:var(--text-muted);font-size:.75rem"> · ${escapeHtml(type)}</span>
+          </span>
+        </div>`).join("")}`;
+  } else {
+    _modal.sources.innerHTML = "";
+  }
+
+  _modal.el.hidden = false;
+  _modal.close.focus();
+}
+
+function closeNodeDetail() {
+  _modal.el.hidden = true;
+  state.selectedNode = null;
+  document.querySelectorAll(".map-node").forEach((n) => n.classList.remove("selected"));
+}
+
+_modal.close.addEventListener("click", closeNodeDetail);
+_modal.el.addEventListener("click", (e) => { if (e.target === _modal.el) closeNodeDetail(); });
+
+_modal.ask.addEventListener("click", () => {
+  closeNodeDetail();
+  elements.question.value = `Tell me more about: ${_modal._currentTitle}`;
+  elements.question.focus();
+  document.querySelector(".qa-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+_modal.expand.addEventListener("click", () => {
+  closeNodeDetail();
+  expandNode(_modal._currentId, _modal._currentTitle);
+});
 
 function renderInsights(research) {
   elements.quality.textContent = research.quality;
@@ -987,6 +1063,7 @@ document.addEventListener("keydown", (e) => {
     }
   }
   if (e.key === "Escape") {
+    if (!_modal.el.hidden) { closeNodeDetail(); return; }
     state.selectedNode = null;
     document.querySelectorAll(".map-node").forEach((n) => n.classList.remove("selected"));
   }
