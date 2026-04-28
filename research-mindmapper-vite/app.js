@@ -197,8 +197,8 @@ function ensureSourceHasText(source) {
 function normalizeResearch(data) {
   const nodes = Array.isArray(data.nodes) && data.nodes.length ? data.nodes : [];
   return {
-    id: data.session_id || Date.now(),
-    session_id: data.session_id,
+    id: data.session_id || data.id || Date.now(),
+    session_id: data.session_id || data.id || null,
     topic: data.topic || elements.topic.value,
     depth: data.depth || elements.depth.value,
     output: data.output || elements.output.value,
