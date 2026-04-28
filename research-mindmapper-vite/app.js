@@ -954,9 +954,36 @@ async function initClerkInstance() {
   if (!CLERK_KEY) {
     throw new Error("VITE_CLERK_PUBLISHABLE_KEY is not set");
   }
-  const c = new Clerk(CLERK_KEY);
-  await c.load();
-  return c;
+
+  console.log("Initializing Clerk...");
+
+  try {
+    const clerkDomain = atob(CLERK_KEY.split("_")[2]).slice(0, -1);
+    
+    // Load Clerk UI bundle if not already present
+    if (!window.__internal_ClerkUICtor) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = `https://${clerkDomain}/npm/@clerk/ui@1/dist/ui.browser.js`;
+        script.async = true;
+        script.crossOrigin = "anonymous";
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("Failed to load @clerk/ui bundle"));
+        document.head.appendChild(script);
+      });
+    }
+
+    const c = new Clerk(CLERK_KEY);
+    await c.load({
+      ui: { ClerkUI: window.__internal_ClerkUICtor }
+    });
+    
+    console.log("Clerk initialized successfully");
+    return c;
+  } catch (err) {
+    console.error("Clerk initialization failed:", err);
+    throw err;
+  }
 }
 
 async function ensureAuth() {
