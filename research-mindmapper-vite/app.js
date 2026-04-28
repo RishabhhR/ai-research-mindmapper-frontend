@@ -998,8 +998,13 @@ async function initAuth() {
 
   function mountUserBtn() {
     if (!userBtnEl._mounted) {
-      userBtnEl.innerHTML = "";
-      clerk.mountUserButton(userBtnEl);
+      const email = clerk.user?.primaryEmailAddress?.emailAddress || "";
+      userBtnEl.innerHTML = `
+        <div style="display:flex;align-items:center;gap:.6rem">
+          <div id="clerk-user-btn"></div>
+          <span style="font-size:.75rem;color:var(--text-muted,#888);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0">${email}</span>
+        </div>`;
+      clerk.mountUserButton(document.getElementById("clerk-user-btn"));
       userBtnEl._mounted = true;
     }
   }
