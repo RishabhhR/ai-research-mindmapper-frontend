@@ -165,11 +165,13 @@ async function runResearch(event) {
         showToast(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB) — 8 MB max`);
         return;
       }
+      const uploadToken = clerk ? await clerk.session?.getToken() : null;
       const source = await fetch(`${API_BASE}/api/sources`, {
         method: "POST",
         headers: {
           "Content-Type": file.type || "application/octet-stream",
           "X-Filename": file.name,
+          ...(uploadToken ? { "Authorization": `Bearer ${uploadToken}` } : {}),
         },
         body: await file.arrayBuffer(),
       }).then(async (response) => {
