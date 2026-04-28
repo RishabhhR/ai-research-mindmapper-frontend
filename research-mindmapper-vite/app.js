@@ -54,10 +54,31 @@ function setProgress(activeIndex) {
   });
 }
 
+const SKELETON_POSITIONS = [
+  [39, 39], [8, 11], [70, 12], [8, 58], [70, 58], [39, 78],
+];
+
+function showSkeletonNodes() {
+  elements.workspace.innerHTML = "";
+  state.nodeElements = [];
+  state.rootElement = null;
+  SKELETON_POSITIONS.forEach(([x, y], i) => {
+    const el = document.createElement("div");
+    el.className = "skeleton-node";
+    el.style.left = `${x}%`;
+    el.style.top = `${y}%`;
+    el.style.width = i === 0 ? "120px" : "140px";
+    el.style.height = i === 0 ? "48px" : "72px";
+    el.style.animationDelay = `${i * 0.15}s`;
+    elements.workspace.appendChild(el);
+  });
+}
+
 function setLoading(message) {
   setProgress(0);
   showToast(message);
   elements.form.classList.add("is-loading");
+  showSkeletonNodes();
 }
 
 function clearLoading() {
@@ -126,6 +147,10 @@ async function runResearch(event) {
       const file = elements.file.files[0];
       if (!file) {
         showToast("Choose a TXT or PDF file");
+        return;
+      }
+      if (file.size > 8 * 1024 * 1024) {
+        showToast(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB) — 8 MB max`);
         return;
       }
       const source = await fetch(`${API_BASE}/api/sources`, {
@@ -822,8 +847,8 @@ document.addEventListener("mousemove", (e) => {
       draggedNode.dataset.wasDragged = "true";
     }
     
-    draggedNode.style.left = `${dragInitialLeft + dx}%`;
-    draggedNode.style.top = `${dragInitialTop + dy}%`;
+    draggedNode.style.left = `${Math.max(0, Math.min(95, dragInitialLeft + dx))}%`;
+    draggedNode.style.top = `${Math.max(0, Math.min(95, dragInitialTop + dy))}%`;
     
     updateLines();
   } else if (isPanning) {
@@ -949,6 +974,22 @@ elements.navItems.forEach((item) => {
     };
     document.querySelector(map[target]).scrollIntoView({ behavior: "smooth", block: "start" });
   });
+});
+
+document.addEventListener("keydown", (e) => {
+  const mod = e.metaKey || e.ctrlKey;
+  if (mod && e.key === "Enter") {
+    e.preventDefault();
+    if (document.activeElement?.closest("#qaForm")) {
+      elements.qaForm.requestSubmit();
+    } else {
+      elements.form.requestSubmit();
+    }
+  }
+  if (e.key === "Escape") {
+    state.selectedNode = null;
+    document.querySelectorAll(".map-node").forEach((n) => n.classList.remove("selected"));
+  }
 });
 async function initClerkInstance() {
   if (!CLERK_KEY) {

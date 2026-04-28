@@ -18,6 +18,10 @@
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
+  /* aliases used by alt-output components */
+  --accent: var(--primary);
+  --text-primary: var(--text);
+  --text-secondary: var(--text-muted);
 }
 
 * {
@@ -674,7 +678,7 @@ select:focus {
   background: var(--surface);
   box-shadow: var(--shadow-soft);
   transition: transform 180ms ease, border-color 180ms ease;
-  cursor: pointer;
+  cursor: grab;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
@@ -992,4 +996,37 @@ select:focus {
     position: static;
     width: 100%;
   }
+}
+
+/* ── Loading skeleton ── */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.9; }
+}
+
+.skeleton-node {
+  position: absolute;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--surface-warm), var(--surface-high));
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.research-form.is-loading .primary-button {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.research-form.is-loading .primary-button::after {
+  content: "…";
+}
+
+/* ── File size warning toast modifier ── */
+.toast.warning {
+  background: #7a3e00;
+}
+
+/* ── Scroll-wheel zoom hint ── */
+.mindmap-canvas {
+  touch-action: none;
 }
