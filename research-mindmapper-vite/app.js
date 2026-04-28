@@ -48,7 +48,17 @@ const elements = {
   question: document.querySelector("#questionInput"),
   answer: document.querySelector("#answerPanel"),
   sessionBadge: document.querySelector("#sessionBadge"),
+  researchBtn: document.querySelector("#researchBtn"),
 };
+
+function syncResearchBtn() {
+  const hasText = elements.topic.value.trim().length > 0;
+  const hasFile = state.mode === "file" && elements.file.files.length > 0;
+  elements.researchBtn.disabled = !(hasText || hasFile);
+}
+
+elements.topic.addEventListener("input", syncResearchBtn);
+elements.file.addEventListener("change", syncResearchBtn);
 
 function setProgress(activeIndex) {
   elements.steps.forEach((step, index) => {
@@ -867,6 +877,7 @@ function setMode(mode) {
   elements.modeTabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.mode === mode));
   elements.file.classList.toggle("visible", mode === "file");
   elements.topic.placeholder = mode === "url" ? "Paste a webpage or YouTube URL..." : "What do you want to research?";
+  syncResearchBtn();
 }
 
 let draggedNode = null;

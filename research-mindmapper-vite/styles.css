@@ -350,6 +350,13 @@ select:focus {
   background: var(--primary-hover);
 }
 
+.primary-button:disabled {
+  background: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .ghost-button {
   padding: 0 14px;
   border: 1px solid var(--border);
