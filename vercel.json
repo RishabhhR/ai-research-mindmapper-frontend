@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": null,
-  "outputDirectory": ".",
+  "buildCommand": "cd research-mindmapper-vite && npm install && npm run build",
+  "outputDirectory": "research-mindmapper-vite/dist",
   "framework": null,
   "routes": [
     {
