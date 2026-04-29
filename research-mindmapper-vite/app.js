@@ -1220,6 +1220,7 @@ async function initClerkInstance() {
 
     const c = new Clerk(CLERK_KEY);
     await c.load({
+      telemetry: false,
       ui: { ClerkUI: window.__internal_ClerkUICtor }
     });
     
