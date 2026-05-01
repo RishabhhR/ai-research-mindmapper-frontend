@@ -1,0 +1,36 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Orange rounded background -->
+  <rect width="64" height="64" rx="16" fill="#ff6f00"/>
+  <!-- subtle inner glow -->
+  <rect width="64" height="64" rx="16" fill="url(#glow)" opacity="0.3"/>
+
+  <!-- Connection lines (drawn first, behind nodes) -->
+  <!-- Center → Top-left node -->
+  <line x1="32" y1="32" x2="14" y2="14" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+  <!-- Center → Top-right node -->
+  <line x1="32" y1="32" x2="50" y2="14" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+  <!-- Center → Bottom-left node -->
+  <line x1="32" y1="32" x2="14" y2="50" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+  <!-- Center → Bottom-right node -->
+  <line x1="32" y1="32" x2="50" y2="50" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+  <!-- Center → Right node -->
+  <line x1="32" y1="32" x2="56" y2="30" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- Satellite nodes -->
+  <circle cx="14" cy="14" r="5.5" fill="white" opacity="0.85"/>
+  <circle cx="50" cy="14" r="5.5" fill="white" opacity="0.85"/>
+  <circle cx="14" cy="50" r="5.5" fill="white" opacity="0.85"/>
+  <circle cx="50" cy="50" r="5.5" fill="white" opacity="0.85"/>
+  <circle cx="56" cy="30" r="4"   fill="white" opacity="0.7"/>
+
+  <!-- Central hub (drawn last, on top) -->
+  <circle cx="32" cy="32" r="9" fill="white"/>
+  <circle cx="32" cy="32" r="5" fill="#ff6f00"/>
+
+  <defs>
+    <radialGradient id="glow" cx="30%" cy="25%" r="60%">
+      <stop offset="0%" stop-color="white"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+  </defs>
+</svg>

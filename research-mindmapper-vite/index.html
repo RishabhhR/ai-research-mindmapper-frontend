@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Research Mindmapper</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -23,7 +24,25 @@
     <div class="app-shell" id="app-shell">
       <aside class="sidebar" aria-label="Research history">
         <div class="brand-block">
-          <div class="brand-mark">RM</div>
+          <div class="brand-mark">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <!-- connection lines -->
+              <line x1="14" y1="14" x2="5"  y2="5"  stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+              <line x1="14" y1="14" x2="23" y2="5"  stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+              <line x1="14" y1="14" x2="5"  y2="23" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+              <line x1="14" y1="14" x2="23" y2="23" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+              <line x1="14" y1="14" x2="25" y2="13" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+              <!-- satellite nodes -->
+              <circle cx="5"  cy="5"  r="2.5" fill="white" opacity="0.85"/>
+              <circle cx="23" cy="5"  r="2.5" fill="white" opacity="0.85"/>
+              <circle cx="5"  cy="23" r="2.5" fill="white" opacity="0.85"/>
+              <circle cx="23" cy="23" r="2.5" fill="white" opacity="0.85"/>
+              <circle cx="25" cy="13" r="2"   fill="white" opacity="0.7"/>
+              <!-- central hub -->
+              <circle cx="14" cy="14" r="4.5" fill="white"/>
+              <circle cx="14" cy="14" r="2.5" fill="#ff6f00"/>
+            </svg>
+          </div>
           <div>
             <p class="eyebrow">Workspace</p>
             <h1>Research Mindmapper</h1>
