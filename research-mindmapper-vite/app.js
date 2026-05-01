@@ -60,6 +60,13 @@ function syncResearchBtn() {
 elements.topic.addEventListener("input", syncResearchBtn);
 elements.file.addEventListener("change", syncResearchBtn);
 
+// Chrome ignores autocomplete="off" and may pre-fill from history.
+// Clear on load so the field is always blank for new sessions.
+window.addEventListener("load", () => {
+  elements.topic.value = "";
+  syncResearchBtn();
+});
+
 function setProgress(activeIndex) {
   elements.steps.forEach((step, index) => {
     step.classList.toggle("active", index <= activeIndex);
