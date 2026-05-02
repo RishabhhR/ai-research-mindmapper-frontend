@@ -76,6 +76,8 @@ export default async function handler(request) {
         "User-Agent": BROWSER_UA,
         "Accept-Language": "en-US,en;q=0.9",
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        // Bypass YouTube's GDPR consent wall without cookies from a prior session
+        Cookie: "CONSENT=YES+cb; SOCS=CAESEwgDEgk0ODE5OTI3MjQaAmVuIAEaBgiA_LyaBg",
       },
     });
     if (!pageResp.ok) {
