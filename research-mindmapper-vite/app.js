@@ -121,6 +121,20 @@ async function requestJson(path, options = {}) {
   return data;
 }
 
+async function pollJob(jobId) {
+  const INTERVAL = 2000;
+  const MAX_WAIT = 120000; // 2 min ceiling
+  const start = Date.now();
+  while (Date.now() - start < MAX_WAIT) {
+    await new Promise((r) => setTimeout(r, INTERVAL));
+    const elapsed = Math.round((Date.now() - start) / 1000);
+    showToast(`Transcribing video… ${elapsed}s`);
+    const job = await requestJson(`/api/jobs/${jobId}`);
+    if (job.status === "done" || job.status === "failed") return job;
+  }
+  return { status: "failed", error: "Timed out waiting for transcript. Try pasting it as a .txt file." };
+}
+
 async function runResearch(event) {
   event.preventDefault();
   if (!await ensureAuth()) return;
@@ -150,7 +164,21 @@ async function runResearch(event) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: topic, topic }),
       });
-      ensureSourceHasText(source);
+
+      // YouTube returns status:"pending" + job_id — poll until the
+      // transcript pipeline finishes, then proceed to generate.
+      let sourceWarnings = source.warnings || [];
+      if (source.status === "pending" && source.job_id) {
+        showToast("Transcribing video…");
+        const job = await pollJob(source.job_id);
+        if (job.status === "failed") throw new Error(job.error || "Transcription failed.");
+        sourceWarnings = job.warnings || [];
+        // If transcript was blocked with 0 chunks the generate call still
+        // runs — the LLM will synthesise from the URL title + web search.
+      } else {
+        ensureSourceHasText(source);
+      }
+
       result = await requestJson(`/api/sessions/${source.session_id}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -161,7 +189,7 @@ async function runResearch(event) {
           source: elements.source.value,
         }),
       });
-      result.warnings = [...(source.warnings || []), ...(result.warnings || [])];
+      result.warnings = [...sourceWarnings, ...(result.warnings || [])];
     } else {
       const file = elements.file.files[0];
       if (!file) {
