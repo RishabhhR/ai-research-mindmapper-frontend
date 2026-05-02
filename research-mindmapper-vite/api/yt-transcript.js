@@ -94,6 +94,12 @@ export default async function handler(request) {
     );
   }
 
+  // ── DEBUG: surface what YouTube actually returned ─────────────────────────
+  const debugSnippet = html.slice(0, 600);
+  const hasCaptions = html.includes("captionTracks");
+  const hasConsent  = html.includes("consent.youtube.com") || html.includes("SOCS");
+  const hasSignIn   = html.includes("Sign in") || html.includes("signin");
+
   // ── Step 2: extract captionTracks from ytInitialPlayerResponse ────────────
   const match = html.match(/"captionTracks":(\[.*?\])/);
   if (!match) {
@@ -105,7 +111,10 @@ export default async function handler(request) {
     const reason = blocked
       ? "Video is age-restricted or requires sign-in — captions not accessible."
       : "No caption tracks found. This video may not have captions enabled.";
-    return Response.json({ success: false, error: reason }, { status: 404 });
+    return Response.json({
+      success: false, error: reason,
+      _debug: { hasCaptions, hasConsent, hasSignIn, htmlLen: html.length, snippet: debugSnippet },
+    }, { status: 404 });
   }
 
   let tracks = [];
