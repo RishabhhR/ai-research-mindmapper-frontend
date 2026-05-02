@@ -172,9 +172,13 @@ async function runResearch(event) {
         showToast("Transcribing video…");
         const job = await pollJob(source.job_id);
         if (job.status === "failed") throw new Error(job.error || "Transcription failed.");
+        // If we got 0 chunks the transcript was blocked — stop here instead
+        // of generating a hallucinated mindmap from the title alone.
+        if (!job.chunks_count) {
+          const warn = job.warnings?.[0] || "Could not extract transcript from this video.";
+          throw new Error(warn);
+        }
         sourceWarnings = job.warnings || [];
-        // If transcript was blocked with 0 chunks the generate call still
-        // runs — the LLM will synthesise from the URL title + web search.
       } else {
         ensureSourceHasText(source);
       }
