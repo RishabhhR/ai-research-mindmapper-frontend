@@ -96,9 +96,14 @@ export default async function handler(request) {
 
   // ── DEBUG: surface what YouTube actually returned ─────────────────────────
   const debugSnippet = html.slice(0, 600);
-  const hasCaptions = html.includes("captionTracks");
-  const hasConsent  = html.includes("consent.youtube.com") || html.includes("SOCS");
-  const hasSignIn   = html.includes("Sign in") || html.includes("signin");
+  const hasCaptions       = html.includes("captionTracks");
+  const hasPlayerResponse = html.includes("ytInitialPlayerResponse");
+  const hasTimedtext      = html.includes("timedtext");
+  const hasConsent        = html.includes("consent.youtube.com") || html.includes("SOCS");
+  const hasSignIn         = html.includes("Sign in") || html.includes("signin");
+  // Find first occurrence of timedtext to see URL format
+  const timedtextIdx      = html.indexOf("timedtext");
+  const timedtextCtx      = timedtextIdx >= 0 ? html.slice(timedtextIdx - 20, timedtextIdx + 120) : "";
 
   // ── Step 2: extract captionTracks from ytInitialPlayerResponse ────────────
   const match = html.match(/"captionTracks":(\[.*?\])/);
@@ -113,7 +118,7 @@ export default async function handler(request) {
       : "No caption tracks found. This video may not have captions enabled.";
     return Response.json({
       success: false, error: reason,
-      _debug: { hasCaptions, hasConsent, hasSignIn, htmlLen: html.length, snippet: debugSnippet },
+      _debug: { hasCaptions, hasPlayerResponse, hasTimedtext, timedtextCtx, hasConsent, hasSignIn, htmlLen: html.length, snippet: debugSnippet },
     }, { status: 404 });
   }
 
