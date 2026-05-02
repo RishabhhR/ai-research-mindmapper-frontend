@@ -1,16 +1,11 @@
 /**
  * Vercel Edge Function — YouTube transcript proxy via page HTML parsing
  *
- * InnerTube API clients now require authenticated session data and return
- * UNPLAYABLE/LOGIN_REQUIRED without it. The reliable approach is:
- *
- *   1. Fetch the YouTube watch page HTML (as a browser would)
- *   2. Regex-extract the "captionTracks" array from ytInitialPlayerResponse
- *   3. Pick the best English track — it contains a fully-tokenised baseUrl
- *   4. Fetch that URL and return the transcript text
- *
- * Runs on Cloudflare edge nodes (not AWS/GCP datacenter IPs), which is
- * why this works when the Python backend's /api/timedtext calls are blocked.
+ * NOTE: YouTube strips captionTracks from responses to all datacenter IPs,
+ * including Cloudflare edge nodes. This endpoint works only when YouTube
+ * happens to serve the full player response (e.g. certain public videos
+ * without geo/age restrictions). The primary transcript path is the
+ * cookie-authenticated yt-dlp pipeline on the backend (YOUTUBE_COOKIES_B64).
  *
  * GET /api/yt-transcript?v=VIDEO_ID
  * → { success: true,  text: "...", lang: "en", tracks: N }
@@ -94,17 +89,6 @@ export default async function handler(request) {
     );
   }
 
-  // ── DEBUG: surface what YouTube actually returned ─────────────────────────
-  const debugSnippet = html.slice(0, 600);
-  const hasCaptions       = html.includes("captionTracks");
-  const hasPlayerResponse = html.includes("ytInitialPlayerResponse");
-  const hasTimedtext      = html.includes("timedtext");
-  const hasConsent        = html.includes("consent.youtube.com") || html.includes("SOCS");
-  const hasSignIn         = html.includes("Sign in") || html.includes("signin");
-  // Extract playabilityStatus from ytInitialPlayerResponse
-  const playerMatch = html.match(/ytInitialPlayerResponse\s*=\s*\{[^<]{0,200}/);
-  const playerSnippet = playerMatch ? playerMatch[0].slice(0, 300) : "not found";
-
   // ── Step 2: extract captionTracks from ytInitialPlayerResponse ────────────
   const match = html.match(/"captionTracks":(\[.*?\])/);
   if (!match) {
@@ -116,10 +100,7 @@ export default async function handler(request) {
     const reason = blocked
       ? "Video is age-restricted or requires sign-in — captions not accessible."
       : "No caption tracks found. This video may not have captions enabled.";
-    return Response.json({
-      success: false, error: reason,
-      _debug: { hasCaptions, hasPlayerResponse, hasTimedtext, hasConsent, hasSignIn, htmlLen: html.length, playerSnippet },
-    }, { status: 404 });
+    return Response.json({ success: false, error: reason }, { status: 404 });
   }
 
   let tracks = [];
