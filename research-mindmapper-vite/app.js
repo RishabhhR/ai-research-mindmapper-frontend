@@ -57,7 +57,64 @@ function syncResearchBtn() {
   elements.researchBtn.disabled = !(hasText || hasFile);
 }
 
-elements.topic.addEventListener("input", syncResearchBtn);
+const EXTENSION_INSTALL_URL =
+  "https://github.com/RishabhhR/ai-research-mindmapper-backend/tree/main/extension";
+
+function isYouTubeUrl(val) {
+  return /youtube\.com\/watch|youtu\.be\//.test(val);
+}
+
+function showExtensionHint(visible) {
+  let el = document.getElementById("yt-extension-hint");
+  if (!visible) { if (el) el.style.display = "none"; return; }
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "yt-extension-hint";
+    el.style.cssText =
+      "font-size:11px;color:#a78bfa;margin-top:6px;display:flex;align-items:center;gap:6px;";
+    el.innerHTML =
+      `<span>⚡</span>` +
+      `<span>For reliable YouTube transcripts, ` +
+      `<a href="${EXTENSION_INSTALL_URL}" target="_blank" rel="noreferrer" ` +
+      `style="color:#a78bfa;text-decoration:underline;">install our Chrome extension</a>.</span>`;
+    elements.topic.parentElement.appendChild(el);
+  }
+  el.style.display = "flex";
+}
+
+function showExtensionCta(message) {
+  showToast(
+    `${message} → ` +
+    `Install the Chrome extension for YouTube transcripts`
+  );
+  // Also render a persistent banner below the form
+  let el = document.getElementById("yt-cta-banner");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "yt-cta-banner";
+    el.style.cssText =
+      "background:#1a0a2e;border:1px solid #7c3aed;border-radius:8px;" +
+      "padding:10px 14px;margin-top:12px;font-size:12px;line-height:1.6;";
+    elements.form.appendChild(el);
+  }
+  el.innerHTML =
+    `<strong style="color:#a78bfa">YouTube transcript unavailable</strong><br>` +
+    `<span style="color:#bbb">Install the <a href="${EXTENSION_INSTALL_URL}" ` +
+    `target="_blank" rel="noreferrer" style="color:#a78bfa;text-decoration:underline;">` +
+    `Mindmapper Chrome extension</a> — open any YouTube video, click the icon, ` +
+    `and the transcript is sent instantly.</span>`;
+  el.style.display = "block";
+}
+
+function hideExtensionCta() {
+  const el = document.getElementById("yt-cta-banner");
+  if (el) el.style.display = "none";
+}
+
+elements.topic.addEventListener("input", () => {
+  syncResearchBtn();
+  if (state.mode === "url") showExtensionHint(isYouTubeUrl(elements.topic.value));
+});
 elements.file.addEventListener("change", syncResearchBtn);
 
 // Chrome ignores autocomplete="off" and may pre-fill from history.
@@ -176,8 +233,10 @@ async function runResearch(event) {
         // of generating a hallucinated mindmap from the title alone.
         if (!job.chunks_count) {
           const warn = job.warnings?.[0] || "Could not extract transcript from this video.";
+          showExtensionCta(warn);
           throw new Error(warn);
         }
+        hideExtensionCta();
         sourceWarnings = job.warnings || [];
       } else {
         ensureSourceHasText(source);
@@ -1031,6 +1090,8 @@ function setMode(mode) {
   elements.file.classList.toggle("visible", mode === "file");
   elements.topic.placeholder = mode === "url" ? "Paste a webpage or YouTube URL..." : "What do you want to research?";
   syncResearchBtn();
+  if (mode === "url") showExtensionHint(isYouTubeUrl(elements.topic.value));
+  else showExtensionHint(false);
 }
 
 let draggedNode = null;
