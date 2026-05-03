@@ -60,55 +60,93 @@ function syncResearchBtn() {
 const EXTENSION_INSTALL_URL =
   "https://github.com/RishabhhR/ai-research-mindmapper-backend/tree/main/extension";
 
+// "degraded" or "down" when backend signals Supadata quota issues
+let youtubeStatus = "ok";
+
 function isYouTubeUrl(val) {
   return /youtube\.com\/watch|youtu\.be\//.test(val);
 }
 
+function ytHasPreviouslyFailed() {
+  return localStorage.getItem("ytTranscriptFailed") === "1";
+}
+
+function markYtFailed() {
+  localStorage.setItem("ytTranscriptFailed", "1");
+}
+
+const EXT_LINK =
+  `<a href="${EXTENSION_INSTALL_URL}" target="_blank" rel="noreferrer" ` +
+  `style="color:#a78bfa;font-weight:600;text-decoration:underline;">` +
+  `Install Chrome Extension →</a>`;
+
 function showExtensionHint(visible) {
   let el = document.getElementById("yt-extension-hint");
   if (!visible) { if (el) el.style.display = "none"; return; }
+
+  const degraded = youtubeStatus !== "ok" || ytHasPreviouslyFailed();
+  const msg = degraded
+    ? `⚠ YouTube transcripts are limited right now. ${EXT_LINK} for reliable results.`
+    : `⚡ For reliable YouTube transcripts, ${EXT_LINK}`;
+
   if (!el) {
     el = document.createElement("div");
     el.id = "yt-extension-hint";
     el.style.cssText =
-      "font-size:11px;color:#a78bfa;margin-top:6px;display:flex;align-items:center;gap:6px;";
-    el.innerHTML =
-      `<span>⚡</span>` +
-      `<span>For reliable YouTube transcripts, ` +
-      `<a href="${EXTENSION_INSTALL_URL}" target="_blank" rel="noreferrer" ` +
-      `style="color:#a78bfa;text-decoration:underline;">install our Chrome extension</a>.</span>`;
+      "font-size:12px;margin-top:8px;padding:8px 10px;border-radius:6px;line-height:1.5;";
     elements.topic.parentElement.appendChild(el);
   }
-  el.style.display = "flex";
+  el.innerHTML = msg;
+  el.style.background = degraded ? "#1a0a2e" : "transparent";
+  el.style.border      = degraded ? "1px solid #7c3aed" : "none";
+  el.style.color       = degraded ? "#c4b5fd" : "#a78bfa";
+  el.style.display     = "block";
 }
 
 function showExtensionCta(message) {
-  showToast(
-    `${message} → ` +
-    `Install the Chrome extension for YouTube transcripts`
-  );
-  // Also render a persistent banner below the form
+  markYtFailed();
   let el = document.getElementById("yt-cta-banner");
   if (!el) {
     el = document.createElement("div");
     el.id = "yt-cta-banner";
     el.style.cssText =
       "background:#1a0a2e;border:1px solid #7c3aed;border-radius:8px;" +
-      "padding:10px 14px;margin-top:12px;font-size:12px;line-height:1.6;";
+      "padding:10px 14px;margin-top:12px;font-size:12px;line-height:1.7;";
     elements.form.appendChild(el);
   }
   el.innerHTML =
     `<strong style="color:#a78bfa">YouTube transcript unavailable</strong><br>` +
-    `<span style="color:#bbb">Install the <a href="${EXTENSION_INSTALL_URL}" ` +
-    `target="_blank" rel="noreferrer" style="color:#a78bfa;text-decoration:underline;">` +
-    `Mindmapper Chrome extension</a> — open any YouTube video, click the icon, ` +
-    `and the transcript is sent instantly.</span>`;
+    `<span style="color:#bbb">Use our Chrome extension instead — open any YouTube video, ` +
+    `click the icon, transcript is uploaded in seconds.</span><br>` +
+    EXT_LINK;
   el.style.display = "block";
 }
 
 function hideExtensionCta() {
   const el = document.getElementById("yt-cta-banner");
   if (el) el.style.display = "none";
+}
+
+async function checkYoutubeStatus() {
+  try {
+    const data = await fetch(`${API_BASE}/api/health`).then(r => r.json());
+    youtubeStatus = data.youtube_status || "ok";
+    if (youtubeStatus !== "ok") {
+      // Show persistent top banner when you've flipped the env var
+      let el = document.getElementById("yt-global-banner");
+      if (!el) {
+        el = document.createElement("div");
+        el.id = "yt-global-banner";
+        el.style.cssText =
+          "background:#1a0a2e;border-bottom:1px solid #7c3aed;padding:8px 16px;" +
+          "font-size:12px;color:#c4b5fd;text-align:center;line-height:1.6;";
+        document.body.prepend(el);
+      }
+      el.innerHTML =
+        `⚠ YouTube auto-transcription is currently limited. ` +
+        EXT_LINK + ` for uninterrupted access.`;
+    }
+  } catch { /* non-critical */ }
 }
 
 elements.topic.addEventListener("input", () => {
@@ -1387,6 +1425,7 @@ async function initAuth() {
   }
 }
 
+checkYoutubeStatus();
 setMode("query");
 loadResearch({
   id: "welcome",
