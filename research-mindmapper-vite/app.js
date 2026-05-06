@@ -973,41 +973,48 @@ function createAltContainer() {
 
 function renderReport(research, container) {
   const nodes = research.nodes || [];
+  const sources = research.sources || [];
   container.innerHTML = `
     <div class="alt-output report-output">
       <div class="alt-output-summary">${escapeHtml(research.summary)}</div>
       <div class="alt-output-sections">
-        ${nodes.map(([title, body, , , provenance], i) => `
-          <div class="report-section">
+        ${nodes.map(([title, body, , , provenance], i) => {
+          const src = sourceBlock(title, sources);
+          return `<div class="report-section">
             <div class="report-section-num">${i + 1}</div>
             <div class="report-section-body">
               <div class="report-section-title">${escapeHtml(title)}</div>
               <div class="report-section-text">${escapeHtml(body)}</div>
-              <span class="node-badge ${provenance}">${labelFor(provenance)}</span>
+              ${src || badge(provenance)}
             </div>
-          </div>`).join("")}
+          </div>`;
+        }).join("")}
       </div>
     </div>`;
 }
 
 function renderComparison(research, container) {
   const nodes = research.nodes || [];
+  const sources = research.sources || [];
   container.innerHTML = `
     <div class="alt-output comparison-output">
       <div class="alt-output-summary">${escapeHtml(research.summary)}</div>
       <div class="comparison-grid">
-        ${nodes.map(([title, body, , , provenance]) => `
-          <div class="comparison-card">
+        ${nodes.map(([title, body, , , provenance]) => {
+          const src = sourceBlock(title, sources);
+          return `<div class="comparison-card">
             <div class="comparison-card-title">${escapeHtml(title)}</div>
             <div class="comparison-card-body">${escapeHtml(body)}</div>
-            <span class="node-badge ${provenance}">${labelFor(provenance)}</span>
-          </div>`).join("")}
+            ${src || badge(provenance)}
+          </div>`;
+        }).join("")}
       </div>
     </div>`;
 }
 
 function renderBullets(research, container) {
   const nodes = research.nodes || [];
+  const sources = research.sources || [];
   const summaryBullets = research.summary
     .split(/\n|(?<=\.\s)/).map(s => s.replace(/^[•\-*]\s*/, "").trim()).filter(Boolean);
   container.innerHTML = `
@@ -1016,15 +1023,17 @@ function renderBullets(research, container) {
         ${summaryBullets.map(line => `<li>${escapeHtml(line)}</li>`).join("")}
       </ul>
       <div class="bullets-nodes">
-        ${nodes.map(([title, body, , , provenance]) => `
-          <div class="bullet-item">
+        ${nodes.map(([title, body, , , provenance]) => {
+          const src = sourceBlock(title, sources);
+          return `<div class="bullet-item">
             <span class="bullet-dot"></span>
             <div class="bullet-content">
               <span class="bullet-title">${escapeHtml(title)}</span>
               <span class="bullet-body">${escapeHtml(body)}</span>
-              <span class="node-badge ${provenance}">${labelFor(provenance)}</span>
+              ${src || badge(provenance)}
             </div>
-          </div>`).join("")}
+          </div>`;
+        }).join("")}
       </div>
     </div>`;
 }
@@ -1107,6 +1116,25 @@ function labelFor(provenance) {
     ai_synthesized: "AI synthesis",
     web_enriched: "Web enriched",
   }[provenance] || "AI synthesis";
+}
+
+function findNodeSource(title, sources) {
+  const terms = title.toLowerCase().split(/\W+/).filter(w => w.length > 3);
+  if (!terms.length) return null;
+  return (sources || []).find(([srcTitle, , , body, , url]) =>
+    url && terms.some(t => `${srcTitle} ${body}`.toLowerCase().includes(t))
+  ) || null;
+}
+
+function sourceBlock(nodeTitle, sources) {
+  const src = findNodeSource(nodeTitle, sources);
+  if (!src) return "";
+  const [srcTitle, , , body, , url] = src;
+  const snippet = body ? body.slice(0, 240).trim() + (body.length > 240 ? "…" : "") : "";
+  return `<div class="report-source-block">
+    ${snippet ? `<p class="report-source-snippet">${escapeHtml(snippet)}</p>` : ""}
+    <a class="report-source-link" href="${escapeAttr(url)}" target="_blank" rel="noreferrer">Read more — ${escapeHtml(srcTitle)} ↗</a>
+  </div>`;
 }
 
 function showToast(message) {
