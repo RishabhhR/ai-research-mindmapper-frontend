@@ -903,7 +903,7 @@ function renderHistory() {
     .map((item) => `
       <button class="history-card" type="button" data-id="${escapeAttr(item.id)}" title="${escapeAttr(item.topic)}">
         <strong>${escapeHtml(formatTopic(item.topic))}</strong>
-        <span>${escapeHtml(item.created_at || item.createdAt)} · ${escapeHtml(item.depth)}</span>
+        <span>${escapeHtml(formatSessionDate(item.created_at || item.createdAt))} · ${escapeHtml(item.depth)}</span>
       </button>
     `)
     .join("");
@@ -1116,6 +1116,15 @@ function labelFor(provenance) {
     ai_synthesized: "AI synthesis",
     web_enriched: "Web enriched",
   }[provenance] || "AI synthesis";
+}
+
+function formatSessionDate(raw) {
+  if (!raw) return "";
+  try {
+    return new Date(raw).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return raw;
+  }
 }
 
 function findNodeSource(title, sources) {
