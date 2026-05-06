@@ -63,7 +63,7 @@ button {
   padding: 28px;
   background: #fff1eb;
   border-right: 1px solid var(--border);
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .brand-block {
@@ -152,10 +152,13 @@ h2 {
 .history-panel {
   margin-top: auto;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
   padding: 18px;
   border-radius: var(--radius-md);
   background: var(--surface);
   box-shadow: var(--shadow-soft);
+  overflow: hidden;
 }
 
 .panel-heading,
@@ -190,7 +193,7 @@ h2 {
   display: grid;
   gap: 10px;
   margin-top: 14px;
-  max-height: 320px;
+  min-height: 0;
   overflow-y: auto;
   scrollbar-width: thin;
 }
