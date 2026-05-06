@@ -843,14 +843,12 @@ function formatTopic(topic) {
   if (topic.startsWith("http")) {
     try {
       const url = new URL(topic);
-      let path = url.pathname !== "/" ? url.pathname : url.hostname;
-      if (path.length > 30) path = path.substring(0, 30) + "...";
-      return path;
+      return url.pathname !== "/" ? url.pathname : url.hostname;
     } catch {
-      return topic.length > 30 ? topic.substring(0, 30) + "..." : topic;
+      return topic;
     }
   }
-  return topic.length > 40 ? topic.substring(0, 40) + "..." : topic;
+  return topic;
 }
 
 async function migrateLocalStorage() {

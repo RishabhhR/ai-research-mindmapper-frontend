@@ -202,17 +202,26 @@ h2 {
   background: #fffaf7;
   color: var(--text);
   text-align: left;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .history-card strong {
   display: block;
   margin-bottom: 4px;
   font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .history-card span {
+  display: block;
   color: var(--text-muted);
   font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .main-content {
