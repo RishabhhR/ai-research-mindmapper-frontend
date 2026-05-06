@@ -151,6 +151,7 @@ h2 {
 
 .history-panel {
   margin-top: auto;
+  min-height: 0;
   padding: 18px;
   border-radius: var(--radius-md);
   background: var(--surface);
@@ -189,6 +190,9 @@ h2 {
   display: grid;
   gap: 10px;
   margin-top: 14px;
+  max-height: 320px;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .history-card {
