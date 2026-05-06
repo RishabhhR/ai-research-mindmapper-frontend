@@ -977,18 +977,21 @@ function renderReport(research, container) {
       <div class="alt-output-summary">${escapeHtml(research.summary)}</div>
       <div class="alt-output-sections">
         ${nodes.map(([title, body, , , provenance], i) => {
-          const src = sourceBlock(title, sources);
-          return `<div class="report-section">
+          const { html, url } = sourceBlock(title, body, sources);
+          return `<div class="report-section${url ? " has-source" : ""}"${url ? ` data-src-url="${escapeAttr(url)}"` : ""}>
             <div class="report-section-num">${i + 1}</div>
             <div class="report-section-body">
               <div class="report-section-title">${escapeHtml(title)}</div>
               <div class="report-section-text">${escapeHtml(body)}</div>
-              ${src || badge(provenance)}
+              ${html || badge(provenance)}
             </div>
           </div>`;
         }).join("")}
       </div>
     </div>`;
+  container.querySelectorAll(".report-section[data-src-url]").forEach(el => {
+    el.addEventListener("click", () => window.open(el.dataset.srcUrl, "_blank", "noreferrer"));
+  });
 }
 
 function renderComparison(research, container) {
@@ -999,15 +1002,18 @@ function renderComparison(research, container) {
       <div class="alt-output-summary">${escapeHtml(research.summary)}</div>
       <div class="comparison-grid">
         ${nodes.map(([title, body, , , provenance]) => {
-          const src = sourceBlock(title, sources);
-          return `<div class="comparison-card">
+          const { html, url } = sourceBlock(title, body, sources);
+          return `<div class="comparison-card${url ? " has-source" : ""}"${url ? ` data-src-url="${escapeAttr(url)}"` : ""}>
             <div class="comparison-card-title">${escapeHtml(title)}</div>
             <div class="comparison-card-body">${escapeHtml(body)}</div>
-            ${src || badge(provenance)}
+            ${html || badge(provenance)}
           </div>`;
         }).join("")}
       </div>
     </div>`;
+  container.querySelectorAll(".comparison-card[data-src-url]").forEach(el => {
+    el.addEventListener("click", () => window.open(el.dataset.srcUrl, "_blank", "noreferrer"));
+  });
 }
 
 function renderBullets(research, container) {
@@ -1022,18 +1028,21 @@ function renderBullets(research, container) {
       </ul>
       <div class="bullets-nodes">
         ${nodes.map(([title, body, , , provenance]) => {
-          const src = sourceBlock(title, sources);
-          return `<div class="bullet-item">
+          const { html, url } = sourceBlock(title, body, sources);
+          return `<div class="bullet-item${url ? " has-source" : ""}"${url ? ` data-src-url="${escapeAttr(url)}"` : ""}>
             <span class="bullet-dot"></span>
             <div class="bullet-content">
               <span class="bullet-title">${escapeHtml(title)}</span>
               <span class="bullet-body">${escapeHtml(body)}</span>
-              ${src || badge(provenance)}
+              ${html || badge(provenance)}
             </div>
           </div>`;
         }).join("")}
       </div>
     </div>`;
+  container.querySelectorAll(".bullet-item[data-src-url]").forEach(el => {
+    el.addEventListener("click", () => window.open(el.dataset.srcUrl, "_blank", "noreferrer"));
+  });
 }
 
 function escapeHtml(value) {
@@ -1125,23 +1134,32 @@ function formatSessionDate(raw) {
   }
 }
 
-function findNodeSource(title, sources) {
-  const terms = title.toLowerCase().split(/\W+/).filter(w => w.length > 3);
+function findNodeSource(title, description, sources) {
+  const text = `${title} ${description}`.toLowerCase();
+  const terms = text.split(/\W+/).filter(w => w.length > 3);
   if (!terms.length) return null;
-  return (sources || []).find(([srcTitle, , , body, , url]) =>
-    url && terms.some(t => `${srcTitle} ${body}`.toLowerCase().includes(t))
-  ) || null;
+  // Score each source by how many terms match, pick the best
+  let best = null, bestScore = 0;
+  for (const src of (sources || [])) {
+    const [srcTitle, , , body, , url] = src;
+    if (!url) continue;
+    const hay = `${srcTitle} ${body}`.toLowerCase();
+    const score = terms.reduce((n, t) => n + (hay.includes(t) ? 1 : 0), 0);
+    if (score > bestScore) { bestScore = score; best = src; }
+  }
+  return bestScore > 0 ? best : null;
 }
 
-function sourceBlock(nodeTitle, sources) {
-  const src = findNodeSource(nodeTitle, sources);
-  if (!src) return "";
+function sourceBlock(nodeTitle, nodeBody, sources) {
+  const src = findNodeSource(nodeTitle, nodeBody, sources);
+  if (!src) return { html: "", url: "" };
   const [srcTitle, , , body, , url] = src;
   const snippet = body ? body.slice(0, 240).trim() + (body.length > 240 ? "…" : "") : "";
-  return `<div class="report-source-block">
+  const html = `<div class="report-source-block">
     ${snippet ? `<p class="report-source-snippet">${escapeHtml(snippet)}</p>` : ""}
-    <a class="report-source-link" href="${escapeAttr(url)}" target="_blank" rel="noreferrer">Read more — ${escapeHtml(srcTitle)} ↗</a>
+    <span class="report-source-link">Read more — ${escapeHtml(srcTitle)} ↗</span>
   </div>`;
+  return { html, url };
 }
 
 function showToast(message) {

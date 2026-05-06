@@ -520,6 +520,19 @@ select:focus {
   box-shadow: 0 2px 12px rgba(230, 81, 0, 0.1);
 }
 
+.report-section.has-source,
+.comparison-card.has-source,
+.bullet-item.has-source {
+  cursor: pointer;
+}
+
+.report-section.has-source:hover,
+.comparison-card.has-source:hover,
+.bullet-item.has-source:hover {
+  box-shadow: 0 4px 18px rgba(0, 82, 127, 0.15);
+  border-color: rgba(0, 82, 127, 0.25);
+}
+
 .report-section-num {
   flex-shrink: 0;
   width: 32px;
