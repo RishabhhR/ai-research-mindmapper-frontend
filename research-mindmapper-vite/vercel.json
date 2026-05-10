@@ -1,6 +1,5 @@
 {
   "rewrites": [
-    { "source": "/classic", "destination": "/index.html" },
-    { "source": "/", "destination": "/canvas.html" }
+    { "source": "/classic", "destination": "/classic.html" }
   ]
 }
