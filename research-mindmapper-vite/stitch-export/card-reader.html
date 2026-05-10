@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Research Note Modal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#E25F4C",
+          "background-light": "#f8f6f6",
+          "background-dark": "#201412",
+        },
+        fontFamily: {
+          "display": ["Public Sans", "sans-serif"]
+        },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  body {
+    font-family: "Public Sans", "Noto Sans", sans-serif;
+  }
+</style>
+</head>
+<body class="bg-background-light text-[#1a100e] min-h-screen flex items-center justify-center p-4 antialiased">
+<!-- Backdrop -->
+<div class="fixed inset-0 z-40 bg-[rgba(244,240,234,0.8)] backdrop-blur-md flex items-center justify-center p-4 sm:p-6 lg:p-8">
+<!-- Modal Container Wrapper to position close button relative to it -->
+<div class="relative w-full max-w-[800px] h-[819px] max-h-[800px] flex">
+<!-- Close Button (Floating Outside) -->
+<button class="absolute -top-12 right-0 md:-right-12 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-md text-gray-500 hover:text-gray-800 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+<span class="material-symbols-outlined text-[24px]">close</span>
+</button>
+<!-- Modal Content -->
+<div class="w-full h-full bg-[#FCFBF8] rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex flex-col overflow-hidden relative">
+<!-- Header -->
+<div class="flex-none px-8 pt-8 pb-4 border-b border-gray-100">
+<h2 class="text-[32px] font-bold leading-tight mb-2 font-display">Research Note Title</h2>
+<p class="text-sm font-normal leading-normal text-gray-500 uppercase tracking-wide">domain.com • Author Name</p>
+</div>
+<!-- Simulated Contextual Toolbar (Static for design purposes) -->
+<div class="absolute top-[30%] left-1/2 transform -translate-x-1/2 z-10 flex bg-white rounded-full shadow-lg border border-gray-100 p-1 gap-1">
+<button class="px-4 py-1.5 text-sm font-medium rounded-full bg-primary text-white hover:bg-opacity-90 transition-colors">Highlight</button>
+<button class="px-4 py-1.5 text-sm font-medium rounded-full text-gray-700 hover:bg-gray-100 transition-colors">Note</button>
+</div>
+<!-- Body / Skeleton -->
+<div class="flex-1 overflow-y-auto px-8 py-6">
+<div class="max-w-[65ch] mx-auto space-y-6">
+<!-- Skeleton Paragraph 1 -->
+<div class="space-y-3 animate-pulse">
+<div class="h-4 bg-gray-200 rounded w-full"></div>
+<div class="h-4 bg-gray-200 rounded w-[95%]"></div>
+<div class="h-4 bg-gray-200 rounded w-full"></div>
+<div class="h-4 bg-gray-200 rounded w-[90%]"></div>
+<div class="h-4 bg-gray-200 rounded w-[98%]"></div>
+<div class="h-4 bg-gray-200 rounded w-[85%]"></div>
+</div>
+<!-- Skeleton Paragraph 2 -->
+<div class="space-y-3 animate-pulse pt-4">
+<div class="h-4 bg-gray-200 rounded w-[92%]"></div>
+<div class="h-4 bg-gray-200 rounded w-full"></div>
+<div class="h-4 bg-gray-200 rounded w-[88%]"></div>
+<div class="h-4 bg-gray-200 rounded w-[96%]"></div>
+<div class="h-4 bg-gray-200 rounded w-[70%]"></div>
+</div>
+<!-- Skeleton Paragraph 3 -->
+<div class="space-y-3 animate-pulse pt-4">
+<div class="h-4 bg-gray-200 rounded w-full"></div>
+<div class="h-4 bg-gray-200 rounded w-[94%]"></div>
+<div class="h-4 bg-gray-200 rounded w-[90%]"></div>
+<div class="h-4 bg-gray-200 rounded w-full"></div>
+<div class="h-4 bg-gray-200 rounded w-[60%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

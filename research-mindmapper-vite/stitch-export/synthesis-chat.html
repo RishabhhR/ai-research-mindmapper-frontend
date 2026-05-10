@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Synthesis Chat - Research Canvas</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#E25F4C",
+          "background-light": "#f8f6f6",
+          "background-dark": "#201412",
+        },
+        fontFamily: {
+          "display": ["Public Sans", "sans-serif"]
+        },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  body {
+    font-family: 'Public Sans', sans-serif;
+  }
+</style>
+</head>
+<body class="bg-background-light text-background-dark min-h-screen overflow-hidden flex h-screen w-full font-display">
+<!-- Main Canvas Area (Left Side) -->
+<main class="flex-1 h-full relative overflow-hidden bg-background-light p-6">
+<div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 2px 2px, #000 1px, transparent 0); background-size: 24px 24px;"></div>
+<!-- Placeholder content for canvas -->
+<div class="p-8">
+<h1 class="text-3xl font-bold mb-4">Infinite Research Canvas</h1>
+<p class="text-gray-600">Select cards to add to synthesis context...</p>
+</div>
+</main>
+<!-- Synthesis Chat Panel (Right Side) -->
+<aside class="w-[360px] h-[calc(100vh-24px)] bg-[#FCFBF8] shadow-[-8px_0_24px_rgba(42,40,38,0.06)] rounded-l-[24px] my-[12px] flex flex-col z-10 relative overflow-hidden mr-[12px] border border-gray-100">
+<!-- Header -->
+<header class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-[#FCFBF8] z-20 sticky top-0">
+<div class="flex items-center gap-2 text-background-dark">
+<span class="material-symbols-outlined text-primary">auto_awesome</span>
+<h2 class="text-lg font-bold">Synthesis</h2>
+</div>
+<div class="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 border border-primary/20">
+<span class="material-symbols-outlined text-[14px]">view_agenda</span>
+         Context: 4 Cards
+      </div>
+</header>
+<!-- Scrollable Messages Area -->
+<div class="flex-1 overflow-y-auto p-6 flex flex-col gap-6 custom-scrollbar">
+<!-- AI Message -->
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary mt-1">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+</div>
+<div class="flex-1">
+<p class="text-[15px] leading-relaxed text-background-dark">
+            I see you have 4 cards in your context focusing on user behavior patterns. How can I help synthesize them?
+          </p>
+</div>
+</div>
+<!-- User Message Bubble -->
+<div class="flex gap-3 justify-end items-end">
+<div class="bg-[#E8E3DC] text-background-dark px-4 py-3 rounded-[16px] rounded-br-sm max-w-[85%]">
+<p class="text-[15px] leading-relaxed">Summarize the key findings from these cards.</p>
+</div>
+</div>
+<!-- AI Message with Insight Card -->
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary mt-1">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+</div>
+<div class="flex-1 flex flex-col gap-4">
+<p class="text-[15px] leading-relaxed text-background-dark">
+            Based on the selected cards, here is a synthesized insight regarding the drop-off rate during onboarding.
+          </p>
+<!-- Hoverable Insight Card -->
+<div class="group relative bg-white border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing">
+<div class="absolute inset-0 bg-primary/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10 backdrop-blur-[1px]">
+<div class="flex items-center gap-2 text-primary font-medium bg-white/90 px-4 py-2 rounded-full shadow-sm">
+<span class="material-symbols-outlined">drag_indicator</span>
+                   Drag to Canvas
+                </div>
+</div>
+<div class="flex flex-col gap-2 relative z-0">
+<div class="flex items-center justify-between">
+<span class="text-xs font-bold text-primary uppercase tracking-wider">Generated Insight</span>
+<span class="material-symbols-outlined text-gray-400 text-[16px]">sticky_note_2</span>
+</div>
+<h4 class="font-bold text-background-dark">Onboarding Friction</h4>
+<p class="text-sm text-gray-600 leading-snug">Users consistently abandon the flow at step 3 due to requested personal information before perceived value is delivered.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- User Message Bubble -->
+<div class="flex gap-3 justify-end items-end">
+<div class="bg-[#E8E3DC] text-background-dark px-4 py-3 rounded-[16px] rounded-br-sm max-w-[85%]">
+<p class="text-[15px] leading-relaxed">Can you map this to the current user journey?</p>
+</div>
+</div>
+<!-- AI Typing Indicator -->
+<div class="flex gap-3 items-center">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+</div>
+<div class="flex gap-1 items-center h-8 px-2">
+<div class="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+<div class="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+<div class="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+</div>
+</div>
+</div>
+<!-- Sticky Input Area -->
+<div class="p-4 bg-[#FCFBF8] border-t border-gray-100 z-20">
+<div class="relative flex items-end bg-white border border-gray-200 rounded-xl shadow-sm focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all p-1">
+<textarea class="w-full bg-transparent border-none focus:ring-0 resize-none py-3 px-3 text-[15px] max-h-[120px] custom-scrollbar text-background-dark" placeholder="Ask synthesis..." rows="1" style="min-height: 48px;"></textarea>
+<button class="w-10 h-10 shrink-0 bg-primary hover:bg-primary/90 text-white rounded-lg flex items-center justify-center transition-colors mb-0.5 mr-0.5">
+<span class="material-symbols-outlined">arrow_upward</span>
+</button>
+</div>
+<div class="text-center mt-2">
+<span class="text-[11px] text-gray-400">AI can make mistakes. Verify important info.</span>
+</div>
+</div>
+</aside>
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #E8E3DC;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #d4cec6;
+    }
+  </style>
+</body></html>

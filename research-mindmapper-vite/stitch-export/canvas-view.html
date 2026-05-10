@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spatial Research Canvas</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&amp;family=Space+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#E25F4C",
+                        "background-light": "#F4F0EA",
+                        "surface-light": "#FCFBF8",
+                        "background-dark": "#201412",
+                        "text-main": "#1A100E",
+                        "text-muted": "#5A4C48",
+                        "sage": "#9BA896"
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"],
+                        "mono": ["Space Mono", "monospace"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'paper': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'paper-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .dotted-bg {
+            background-image: radial-gradient(circle at center, #D8D2C9 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .connection-line {
+            position: absolute;
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light font-display text-text-main h-full w-full overflow-hidden dotted-bg relative">
+<!-- Floating Top-Left -->
+<div class="absolute top-6 left-6 z-50">
+<button class="flex items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-surface-light text-text-main shadow-paper border border-[#EAE3DA] gap-2 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-white transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+<span class="truncate">Sources</span>
+</button>
+</div>
+<!-- Floating Top-Right -->
+<div class="absolute top-6 right-6 z-50">
+<button class="flex items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-surface-light text-text-main shadow-paper border border-[#EAE3DA] gap-2 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-white transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">chat</span>
+<span class="truncate">AI</span>
+</button>
+</div>
+<!-- Floating Left Edge -->
+<div class="absolute top-1/2 left-4 -translate-y-1/2 z-50">
+<button class="flex items-center justify-center overflow-hidden rounded-full w-10 h-10 bg-surface-light text-text-main shadow-paper border border-[#EAE3DA] hover:bg-white transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">chevron_right</span>
+</button>
+</div>
+<!-- Floating Right Edge -->
+<div class="absolute top-1/2 right-4 -translate-y-1/2 z-50">
+<button class="flex items-center justify-center overflow-hidden rounded-full w-10 h-10 bg-surface-light text-text-main shadow-paper border border-[#EAE3DA] hover:bg-white transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">chevron_left</span>
+</button>
+</div>
+<!-- Zoom Control Bottom-Right -->
+<div class="absolute bottom-6 right-6 z-50">
+<div class="flex h-10 items-center justify-center rounded-full bg-surface-light p-1 shadow-paper border border-[#EAE3DA]">
+<button class="flex h-full w-8 items-center justify-center rounded-full text-text-muted hover:bg-[#F4F0EA] transition-colors">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">remove</span>
+</button>
+<div class="px-2 text-sm font-medium text-text-main select-none">100%</div>
+<button class="flex h-full w-8 items-center justify-center rounded-full text-text-muted hover:bg-[#F4F0EA] transition-colors">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">add</span>
+</button>
+</div>
+</div>
+<!-- Canvas Area -->
+<div class="relative w-full h-full cursor-grab active:cursor-grabbing">
+<!-- Connection Line (SVG) -->
+<svg class="connection-line w-full h-full top-0 left-0">
+<!-- connecting Card 1 (approx 20%, 30%) to Card 2 (approx 45%, 45%) -->
+<path d="M 400 350 C 550 350, 450 480, 600 480" fill="none" stroke="#9BA896" stroke-dasharray="4 4" stroke-width="2"></path>
+</svg>
+<!-- Cluster Halo -->
+<div class="absolute top-[30%] left-[40%] w-[800px] h-[600px] bg-[#EAE3DA]/40 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+<!-- Card 1 (Hover state) -->
+<div class="absolute top-[20%] left-[10%] w-[320px] bg-surface-light rounded-xl p-5 shadow-paper-hover border border-[#EAE3DA] cursor-pointer transform -translate-y-2 transition-transform z-20">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-5 h-5 bg-primary/20 rounded flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[14px]">article</span>
+</div>
+<span class="font-mono text-xs text-text-muted">towardsdatascience.com</span>
+</div>
+<h3 class="font-bold text-lg leading-tight mb-2">Knowledge Graphs 101</h3>
+<p class="text-sm text-text-muted leading-relaxed mb-4">An introduction to structuring data with interconnected entities and relationships for better machine understanding.</p>
+<div class="inline-flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium">
+<span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+                AI Summary
+            </div>
+</div>
+<!-- Card 2 (Cluster) -->
+<div class="absolute top-[35%] left-[40%] w-[320px] bg-surface-light rounded-xl p-5 shadow-paper border border-[#EAE3DA] cursor-pointer hover:shadow-paper-hover transition-shadow z-10">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-5 h-5 bg-blue-500/20 rounded flex items-center justify-center text-blue-600">
+<span class="material-symbols-outlined text-[14px]">description</span>
+</div>
+<span class="font-mono text-xs text-text-muted">arxiv.org</span>
+</div>
+<h3 class="font-bold text-lg leading-tight mb-2">Understanding Context in AI</h3>
+<p class="text-sm text-text-muted leading-relaxed mb-4">Exploring mechanisms that allow language models to retain and utilize contextual information over long sequences.</p>
+<div class="inline-flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium">
+<span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+                Key Concept
+            </div>
+</div>
+<!-- Card 3 (Cluster) -->
+<div class="absolute top-[60%] left-[35%] w-[320px] bg-surface-light rounded-xl p-5 shadow-paper border border-[#EAE3DA] cursor-pointer hover:shadow-paper-hover transition-shadow z-10">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-5 h-5 bg-green-500/20 rounded flex items-center justify-center text-green-600">
+<span class="material-symbols-outlined text-[14px]">library_books</span>
+</div>
+<span class="font-mono text-xs text-text-muted">acm.org</span>
+</div>
+<h3 class="font-bold text-lg leading-tight mb-2">Memory Architectures</h3>
+<p class="text-sm text-text-muted leading-relaxed mb-4">A comparative study of short-term and long-term memory structures in modern neural networks.</p>
+<div class="inline-flex items-center gap-1 bg-[#EAE3DA] text-text-muted px-2 py-1 rounded text-xs font-medium">
+<span class="material-symbols-outlined text-[14px]">bookmark</span>
+                Saved
+            </div>
+</div>
+<!-- Card 4 (Cluster) -->
+<div class="absolute top-[45%] left-[65%] w-[320px] bg-surface-light rounded-xl p-5 shadow-paper border border-[#EAE3DA] cursor-pointer hover:shadow-paper-hover transition-shadow z-10">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-5 h-5 bg-yellow-500/20 rounded flex items-center justify-center text-yellow-600">
+<span class="material-symbols-outlined text-[14px]">public</span>
+</div>
+<span class="font-mono text-xs text-text-muted">nngroup.com</span>
+</div>
+<h3 class="font-bold text-lg leading-tight mb-2">The Future of Interfaces</h3>
+<p class="text-sm text-text-muted leading-relaxed mb-4">How spatial computing and conversational AI are reshaping user experience paradigms beyond traditional screens.</p>
+<div class="inline-flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium">
+<span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+                Related
+            </div>
+</div>
+</div>
+</body></html>
