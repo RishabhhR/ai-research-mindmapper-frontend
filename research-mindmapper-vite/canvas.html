@@ -540,8 +540,8 @@
       </div>
     </div>
 
-    <!-- Reader content (skeleton) -->
-    <div class="flex-1 overflow-y-auto px-xl py-xl">
+    <!-- Reader content -->
+    <div id="reader-body" class="flex-1 overflow-y-auto px-xl py-xl">
       <div class="max-w-[640px] mx-auto space-y-lg">
         <div class="space-y-sm animate-pulse">
           <div class="h-4 bg-surface-container-high rounded w-full"></div>
@@ -606,9 +606,9 @@
 ═══════════════════════════════════════════════ -->
 <script>
   /* ── Panel toggles ─────────────────────────── */
-  const sidebar      = document.getElementById('sidebar');
-  const chatPanel    = document.getElementById('chat-panel');
-  const canvas       = document.getElementById('canvas');
+  const sidebar        = document.getElementById('sidebar');
+  const chatPanel      = document.getElementById('chat-panel');
+  const canvas         = document.getElementById('canvas');
   const openSidebarBtn = document.getElementById('open-sidebar');
   const openChatBtnEl  = document.getElementById('open-chat-btn');
   const closeSidebarBtn = document.getElementById('close-sidebar');
@@ -648,7 +648,6 @@
   closeChatBtn.addEventListener('click',    hideChatPanel);
   openChatBtnEl.addEventListener('click',   showChatPanel);
 
-  /* Synthesize Cluster button also opens chat */
   function openChatPanel() { showChatPanel(); }
 
   /* ── Zoom ──────────────────────────────────── */
@@ -679,8 +678,6 @@
   window.addEventListener('mouseup', () => {
     if (panning) { lx = ox; ly = oy; panning = false; canvas.style.cursor = ''; }
   });
-
-  /* Touch pan */
   canvas.addEventListener('touchstart', e => {
     if (e.touches.length !== 1) return;
     panning = true;
@@ -697,12 +694,113 @@
     if (panning) { lx = ox; ly = oy; panning = false; }
   });
 
+  /* ── Helpers ───────────────────────────────── */
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function makeTypingEl() {
+    const el = document.createElement('div');
+    el.className = 'flex items-center gap-sm';
+    el.innerHTML = `
+      <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1;">psychology</span>
+      <div class="flex gap-xs px-xs">
+        <div class="w-1.5 h-1.5 bg-secondary rounded-full dot1"></div>
+        <div class="w-1.5 h-1.5 bg-secondary rounded-full dot2"></div>
+        <div class="w-1.5 h-1.5 bg-secondary rounded-full dot3"></div>
+      </div>`;
+    return el;
+  }
+
+  function makeAiMsgEl(answerHtml, citationsHtml) {
+    const el = document.createElement('div');
+    el.className = 'flex flex-col gap-sm';
+    el.innerHTML = `
+      <div class="flex items-center gap-xs">
+        <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1;">psychology</span>
+        <span class="font-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">AI Synthesis Assistant</span>
+      </div>
+      <div class="font-body text-body-sm text-on-surface-variant leading-relaxed">${answerHtml}</div>
+      ${citationsHtml || ''}`;
+    return el;
+  }
+
+  const SKELETON_HTML = `
+    <div class="max-w-[640px] mx-auto space-y-lg">
+      <div class="space-y-sm animate-pulse">
+        <div class="h-4 bg-surface-container-high rounded w-full"></div>
+        <div class="h-4 bg-surface-container-high rounded w-[95%]"></div>
+        <div class="h-4 bg-surface-container-high rounded w-full"></div>
+        <div class="h-4 bg-surface-container-high rounded w-[88%]"></div>
+        <div class="h-4 bg-surface-container-high rounded w-[96%]"></div>
+        <div class="h-4 bg-surface-container-high rounded w-[80%]"></div>
+      </div>
+      <div class="my-lg p-md bg-surface-container-low rounded-xl border-l-4 border-primary shadow-paper animate-pulse">
+        <div class="h-3 bg-surface-container-high rounded w-full mb-sm"></div>
+        <div class="h-3 bg-surface-container-high rounded w-[85%]"></div>
+      </div>
+      <div class="space-y-sm animate-pulse">
+        <div class="h-4 bg-surface-container-high rounded w-[92%]"></div>
+        <div class="h-4 bg-surface-container-high rounded w-full"></div>
+        <div class="h-4 bg-surface-container-high rounded w-[85%]"></div>
+        <div class="h-4 bg-surface-container-high rounded w-[97%]"></div>
+        <div class="h-4 bg-surface-container-high rounded w-[70%]"></div>
+      </div>
+    </div>`;
+
   /* ── Card Reader ───────────────────────────── */
   const overlay = document.getElementById('reader-overlay');
-  function openReader(title, meta) {
+
+  function buildReaderContent(sess) {
+    const paras = (sess.summary || '')
+      .split(/\n\n+/).filter(Boolean).slice(0, 4)
+      .map(p => `<p class="font-body text-body-lg text-on-surface-variant leading-[1.8]">${escHtml(p)}</p>`)
+      .join('');
+
+    const nodeItems = (sess.nodes || []).slice(0, 5).map(n => {
+      const t = n.title || n[0] || '';
+      const d = n.description || n.body || n[1] || '';
+      return t ? `
+        <div class="p-md bg-surface-container-low rounded-xl border-l-4 border-primary shadow-paper">
+          <h4 class="font-display text-headline-sm mb-xs text-on-surface">${escHtml(t)}</h4>
+          ${d ? `<p class="font-body text-body-sm text-on-surface-variant">${escHtml(d)}</p>` : ''}
+        </div>` : '';
+    }).join('');
+
+    const srcItems = (sess.sources || []).slice(0, 4).map(s => {
+      const t   = s.title || s[0] || '';
+      const url = s.url || s[5] || '';
+      const typ = s.type || s[1] || '';
+      return t ? `
+        <div class="flex items-center gap-sm py-xs border-b border-outline-variant/10">
+          <span class="material-symbols-outlined text-secondary text-sm">link</span>
+          ${url
+            ? `<a href="${escHtml(url)}" target="_blank" rel="noreferrer" class="font-mono text-label-mono text-secondary hover:underline flex-1 truncate">${escHtml(t)}</a>`
+            : `<span class="font-mono text-label-mono text-on-surface-variant flex-1 truncate">${escHtml(t)}</span>`}
+          ${typ ? `<span class="font-mono text-[10px] text-outline shrink-0">${escHtml(typ)}</span>` : ''}
+        </div>` : '';
+    }).join('');
+
+    return `
+      <div class="max-w-[640px] mx-auto space-y-lg">
+        ${paras || '<p class="font-body text-body-lg text-on-surface-variant leading-[1.8]">AI-synthesized research from your imported source.</p>'}
+        ${nodeItems ? `<div class="space-y-md">${nodeItems}</div>` : ''}
+        ${srcItems ? `
+          <div class="pt-lg border-t border-outline-variant/20">
+            <h4 class="font-mono text-label-mono text-outline uppercase tracking-widest mb-md">Referenced Sources</h4>
+            ${srcItems}
+          </div>` : ''}
+      </div>`;
+  }
+
+  function openReader(title, meta, sessionId) {
     document.getElementById('reader-title').textContent = title;
     document.getElementById('reader-meta').textContent  = meta;
     document.getElementById('reader-source').textContent = meta;
+    const body = document.getElementById('reader-body');
+    body.innerHTML = (sessionId && sessions[sessionId])
+      ? buildReaderContent(sessions[sessionId])
+      : SKELETON_HTML;
     overlay.classList.remove('hidden');
     overlay.classList.add('flex');
   }
@@ -729,8 +827,41 @@
     });
   });
 
+  /* ── Backend API ──────────────────────────────── */
+  const API_BASE = 'https://mindmapper-api-mu.vercel.app';
+  let currentSessionId = null;
+  const sessions = {};
+
+  async function requestJson(path, options = {}) {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: { ...(options.headers || {}) },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || data.message || `Request failed: ${res.status}`);
+    return data;
+  }
+
+  async function pollJob(jobId, onProgress) {
+    const INTERVAL = 2000, MAX_WAIT = 120000;
+    const start = Date.now();
+    while (Date.now() - start < MAX_WAIT) {
+      await new Promise(r => setTimeout(r, INTERVAL));
+      onProgress?.(`Transcribing… ${Math.round((Date.now()-start)/1000)}s`);
+      const job = await requestJson(`/api/jobs/${jobId}`);
+      if (job.status === 'done' || job.status === 'failed') return job;
+    }
+    return { status: 'failed', error: 'Timed out. Please try again.' };
+  }
+
+  function updateContextBadge() {
+    const count = Object.keys(sessions).length + 4; // +4 for demo cards
+    const badge = document.querySelector('#chat-panel .font-mono.text-label-mono.text-on-surface-variant');
+    if (badge) badge.textContent = `Context: ${count} Card${count !== 1 ? 's' : ''}`;
+  }
+
   /* ── Import Source ─────────────────────────────── */
-  function importSource() {
+  async function importSource() {
     const input = document.getElementById('url-input');
     const btn   = document.getElementById('import-btn');
     const url   = input.value.trim();
@@ -740,34 +871,77 @@
       setTimeout(() => { input.style.outline = ''; input.style.outlineOffset = ''; }, 1200);
       return;
     }
+
     let domain = url;
     try { domain = new URL(url.startsWith('http') ? url : 'https://' + url).hostname.replace('www.',''); } catch {}
-    const name0 = domain.split('.')[0];
-    const title = name0.charAt(0).toUpperCase() + name0.slice(1) + ' — Research';
 
-    btn.innerHTML = '<span class="material-symbols-outlined text-[16px]" style="animation:spin 0.8s linear infinite">progress_activity</span> Importing…';
-    btn.disabled = true;
+    const setStatus = msg => {
+      btn.innerHTML = `<span class="material-symbols-outlined text-[16px]" style="animation:spin 0.8s linear infinite">progress_activity</span> ${msg}`;
+      btn.disabled = true;
+    };
+    setStatus('Importing…');
 
-    setTimeout(() => {
+    try {
+      /* Step 1: create source */
+      const source = await requestJson('/api/sources', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.startsWith('http') ? url : 'https://' + url, topic: domain }),
+      });
+
+      /* YouTube: poll async job */
+      if (source.status === 'pending' && source.job_id) {
+        setStatus('Transcribing…');
+        const job = await pollJob(source.job_id, msg => setStatus(msg));
+        if (job.status === 'failed' || !job.chunks_count) {
+          throw new Error(job.error || job.warnings?.[0] || 'Could not extract transcript.');
+        }
+      }
+
+      /* Step 2: generate research */
+      setStatus('Synthesizing…');
+      const result = await requestJson(`/api/sessions/${source.session_id}/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: domain, depth: 'Basic', output: 'Mindmap' }),
+      });
+
+      currentSessionId = source.session_id;
+      const sessionTitle = result.topic || result.root || domain;
+
+      sessions[source.session_id] = {
+        title:   sessionTitle,
+        domain,
+        summary: result.summary || '',
+        nodes:   result.nodes   || [],
+        sources: [...(result.sources || []), ...(result.citations || [])],
+      };
+      updateContextBadge();
+
+      /* Add sidebar card */
+      const isYT = /youtu/.test(url);
       const list = document.getElementById('source-list');
       const card = document.createElement('div');
-      card.dataset.sourceType = 'web';
+      card.dataset.sourceType = isYT ? 'video' : 'web';
       card.className = 'group flex items-center gap-md p-md bg-surface-container-lowest rounded-xl border border-primary/30 cursor-pointer hover:shadow-paper transition-all h-[72px] shrink-0';
-      card.setAttribute('onclick', `openReader('${title.replace(/'/g,"\\'")}','${domain}')`);
+      card.addEventListener('click', () => openReader(sessionTitle, domain, source.session_id));
       card.innerHTML = `
         <div class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-          <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings:'FILL' 1">public</span>
+          <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings:'FILL' 1">${isYT ? 'play_circle' : 'public'}</span>
         </div>
         <div class="flex-1 min-w-0">
-          <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">${title}</h4>
+          <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">${escHtml(sessionTitle)}</h4>
           <span class="font-mono text-label-mono text-outline truncate uppercase block mt-[2px]">${domain}</span>
         </div>
         <span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity shrink-0">open_in_new</span>`;
       list.insertBefore(card, list.firstChild);
 
-      const count = list.querySelectorAll('[data-source-type]').length;
+      const total = list.querySelectorAll('[data-source-type]').length;
       document.getElementById('inbox-footer').innerHTML =
-        `<span class="material-symbols-outlined text-[13px]">inbox</span> ${count} source${count !== 1 ? 's' : ''}`;
+        `<span class="material-symbols-outlined text-[13px]">inbox</span> ${total} source${total !== 1 ? 's' : ''}`;
+
+      /* Add AI research card to canvas */
+      addCanvasCard(source.session_id, sessionTitle, result.summary || '', result.nodes || []);
 
       input.value = '';
       btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">check_circle</span> Imported!';
@@ -775,14 +949,67 @@
         btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">download</span> Import Source';
         btn.disabled = false;
       }, 1800);
-    }, 900);
+
+    } catch (err) {
+      btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">error</span> Failed';
+      setTimeout(() => {
+        btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">download</span> Import Source';
+        btn.disabled = false;
+      }, 2000);
+      /* Show error in chat */
+      const msgs = document.getElementById('chat-messages');
+      const errEl = document.createElement('div');
+      errEl.className = 'flex flex-col gap-sm';
+      errEl.innerHTML = `
+        <div class="flex items-center gap-xs">
+          <span class="material-symbols-outlined text-[#ba1a1a] text-sm">error</span>
+          <span class="font-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">Import Error</span>
+        </div>
+        <div class="font-body text-body-sm text-[#ba1a1a] leading-relaxed">${escHtml(err.message)}</div>`;
+      msgs.appendChild(errEl);
+      msgs.scrollTop = msgs.scrollHeight;
+      showChatPanel();
+    }
   }
 
   document.getElementById('import-btn').addEventListener('click', importSource);
   document.getElementById('url-input').addEventListener('keydown', e => { if (e.key === 'Enter') importSource(); });
 
+  /* ── Add AI research card to canvas ───────────── */
+  let canvasCardOffset = 0;
+  const CANVAS_CARD_POSITIONS = [
+    { left: '120px', top: '820px' },
+    { left: '490px', top: '900px' },
+    { left: '840px', top: '820px' },
+    { left: '300px', top: '1100px' },
+    { left: '680px', top: '1100px' },
+  ];
+
+  function addCanvasCard(sessionId, title, summary, nodes) {
+    const pos = CANVAS_CARD_POSITIONS[canvasCardOffset % CANVAS_CARD_POSITIONS.length];
+    canvasCardOffset++;
+    const previewTags = (nodes || []).slice(0, 3)
+      .map(n => n.title || n[0] || '').filter(Boolean)
+      .map(t => `<span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">${escHtml(t)}</span>`)
+      .join('');
+    const card = document.createElement('div');
+    card.className = 'card-hover absolute bg-surface-container-lowest rounded-xl p-lg w-[300px] shadow-paper border border-primary/20 cursor-pointer hover:shadow-floating';
+    card.style.left = pos.left;
+    card.style.top  = pos.top;
+    card.addEventListener('click', () => openReader(title, sessionId.split('-')[0], sessionId));
+    card.innerHTML = `
+      <div class="flex justify-between items-start mb-sm">
+        <span class="bg-primary/10 text-primary px-sm py-xs rounded font-mono text-label-mono uppercase tracking-widest text-[10px]">AI Synthesis</span>
+        <span class="material-symbols-outlined text-outline text-[18px]">more_horiz</span>
+      </div>
+      <h3 class="font-display text-headline-sm mb-sm">${escHtml(title)}</h3>
+      <p class="font-body text-body-sm text-on-surface-variant leading-relaxed mb-md" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${escHtml(summary || 'Research synthesis generated from your source.')}</p>
+      <div class="flex gap-xs flex-wrap">${previewTags}</div>`;
+    world.appendChild(card);
+  }
+
   /* ── Chat send ─────────────────────────────────── */
-  const AI_RESPONSES = [
+  const FALLBACK_RESPONSES = [
     "Based on your canvas sources, I see a strong thread of contextual persistence — users retain more when spatial layout mirrors their mental model.",
     "Interesting tension between your sources: cognitive load theory suggests simplicity, but your spatial interface papers argue that complexity, when navigable, actually helps recall.",
     "These four sources converge on a single insight: the future of research tools is about making connections visible, not just storing information.",
@@ -790,16 +1017,13 @@
   ];
   let aiMsgIdx = 0;
 
-  function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-
-  function sendChat() {
+  async function sendChat() {
     const input = document.getElementById('chat-input');
     const msgs  = document.getElementById('chat-messages');
     const text  = input.value.trim();
     if (!text) return;
 
+    /* User bubble */
     const userEl = document.createElement('div');
     userEl.className = 'flex flex-col gap-xs items-end';
     userEl.innerHTML = `
@@ -811,32 +1035,48 @@
     input.value = '';
     msgs.scrollTop = msgs.scrollHeight;
 
-    const typingEl = document.createElement('div');
-    typingEl.className = 'flex items-center gap-sm';
-    typingEl.innerHTML = `
-      <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1;">psychology</span>
-      <div class="flex gap-xs px-xs">
-        <div class="w-1.5 h-1.5 bg-secondary rounded-full dot1"></div>
-        <div class="w-1.5 h-1.5 bg-secondary rounded-full dot2"></div>
-        <div class="w-1.5 h-1.5 bg-secondary rounded-full dot3"></div>
-      </div>`;
+    const typingEl = makeTypingEl();
     msgs.appendChild(typingEl);
     msgs.scrollTop = msgs.scrollHeight;
 
-    setTimeout(() => {
-      typingEl.remove();
-      const aiEl = document.createElement('div');
-      aiEl.className = 'flex flex-col gap-sm';
-      aiEl.innerHTML = `
-        <div class="flex items-center gap-xs">
-          <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1;">psychology</span>
-          <span class="font-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">AI Synthesis Assistant</span>
-        </div>
-        <div class="font-body text-body-sm text-on-surface-variant leading-relaxed">${AI_RESPONSES[aiMsgIdx % AI_RESPONSES.length]}</div>`;
-      aiMsgIdx++;
-      msgs.appendChild(aiEl);
-      msgs.scrollTop = msgs.scrollHeight;
-    }, 1100);
+    if (currentSessionId) {
+      /* Real backend Q&A */
+      try {
+        const data = await requestJson(`/api/sessions/${currentSessionId}/ask`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: text }),
+        });
+        typingEl.remove();
+        let citationsHtml = '';
+        if (data.citations?.length) {
+          citationsHtml = `<div class="flex gap-xs flex-wrap mt-xs">` +
+            data.citations.slice(0, 3).map(c =>
+              c.url
+                ? `<a href="${escHtml(c.url)}" target="_blank" rel="noreferrer" class="px-sm py-xs bg-secondary/10 text-on-secondary-fixed-variant rounded text-[10px] font-mono hover:bg-secondary/20 transition-colors">${escHtml(c.title || 'Source')}</a>`
+                : `<span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">${escHtml(c.title || '')}</span>`
+            ).join('') + '</div>';
+        }
+        msgs.appendChild(makeAiMsgEl(escHtml(data.answer || 'No answer returned.'), citationsHtml));
+      } catch (err) {
+        typingEl.remove();
+        msgs.appendChild(makeAiMsgEl(
+          `<span class="text-[#ba1a1a]">⚠ ${escHtml(err.message)}</span>`
+        ));
+      }
+    } else {
+      /* Fallback mock — nudge user to import */
+      setTimeout(() => {
+        typingEl.remove();
+        const response = FALLBACK_RESPONSES[aiMsgIdx % FALLBACK_RESPONSES.length];
+        aiMsgIdx++;
+        msgs.appendChild(makeAiMsgEl(
+          escHtml(response) +
+          `<br><br><em class="text-[11px] text-outline">Import a source above to get answers grounded in your actual research.</em>`
+        ));
+      }, 1100);
+    }
+    msgs.scrollTop = msgs.scrollHeight;
   }
 
   document.getElementById('chat-send').addEventListener('click', sendChat);
@@ -848,14 +1088,11 @@
   function applyResponsiveLayout() {
     const vw = window.innerWidth;
     if (vw < 700) {
-      hideSidebar();
-      hideChatPanel();
+      hideSidebar(); hideChatPanel();
     } else if (vw < 1000) {
-      hideChatPanel();
-      showSidebar();
+      hideChatPanel(); showSidebar();
     } else {
-      showSidebar();
-      showChatPanel();
+      showSidebar(); showChatPanel();
     }
   }
   applyResponsiveLayout();
