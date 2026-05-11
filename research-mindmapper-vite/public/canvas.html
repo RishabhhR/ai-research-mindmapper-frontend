@@ -55,6 +55,7 @@
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #D8D2CA; border-radius: 4px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes bounce-dot {
       0%, 80%, 100% { transform: translateY(0); }
       40%            { transform: translateY(-5px); }
@@ -88,7 +89,7 @@
       <span class="material-symbols-outlined text-muted text-[18px] mr-2">link</span>
       <input id="url-input" class="bg-transparent border-none focus:ring-0 text-sm font-mono text-text placeholder:text-muted w-full p-0" placeholder="Paste a URL…" type="text" />
     </label>
-    <button class="w-full bg-primary hover:bg-[#d14f3c] text-white font-mono text-sm font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-2 h-10">
+    <button id="import-btn" class="w-full bg-primary hover:bg-[#d14f3c] text-white font-mono text-sm font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-2 h-10">
       <span class="material-symbols-outlined text-[16px]">download</span>
       Import Source
     </button>
@@ -96,16 +97,15 @@
 
   <!-- Filter pills -->
   <div class="px-5 py-3 shrink-0 flex gap-2 overflow-x-auto">
-    <button class="px-3 py-1 bg-text text-surface rounded-pill font-mono text-[11px] whitespace-nowrap">All</button>
-    <button class="px-3 py-1 bg-warm hover:bg-grid text-muted rounded-pill font-mono text-[11px] whitespace-nowrap transition-colors">PDFs</button>
-    <button class="px-3 py-1 bg-warm hover:bg-grid text-muted rounded-pill font-mono text-[11px] whitespace-nowrap transition-colors">Web</button>
-    <button class="px-3 py-1 bg-warm hover:bg-grid text-muted rounded-pill font-mono text-[11px] whitespace-nowrap transition-colors">Text</button>
+    <button data-filter="all"  class="filter-pill px-3 py-1 bg-text text-surface rounded-pill font-mono text-[11px] whitespace-nowrap transition-colors">All</button>
+    <button data-filter="pdf"  class="filter-pill px-3 py-1 bg-warm hover:bg-grid text-muted rounded-pill font-mono text-[11px] whitespace-nowrap transition-colors">PDFs</button>
+    <button data-filter="web"  class="filter-pill px-3 py-1 bg-warm hover:bg-grid text-muted rounded-pill font-mono text-[11px] whitespace-nowrap transition-colors">Web</button>
+    <button data-filter="text" class="filter-pill px-3 py-1 bg-warm hover:bg-grid text-muted rounded-pill font-mono text-[11px] whitespace-nowrap transition-colors">Text</button>
   </div>
 
   <!-- Source list -->
-  <div class="flex-1 overflow-y-auto px-5 pb-5 flex flex-col gap-3">
-    <!-- Source cards -->
-    <div class="bg-warm rounded-card p-3 h-[76px] flex items-center gap-3 group cursor-grab hover:shadow-paper border border-transparent hover:border-grid/60 transition-all">
+  <div id="source-list" class="flex-1 overflow-y-auto px-5 pb-5 flex flex-col gap-3">
+    <div data-source-type="web" class="bg-warm rounded-card p-3 h-[76px] flex items-center gap-3 group cursor-pointer hover:shadow-paper border border-transparent hover:border-grid/60 transition-all" onclick="openReader('Cognitive Load in UI Design','nngroup.com')">
       <div class="w-9 h-9 rounded-xl bg-surface flex items-center justify-center shrink-0 shadow-paper text-primary">
         <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1">article</span>
       </div>
@@ -113,9 +113,9 @@
         <h4 class="font-semibold text-sm truncate mb-0.5">Cognitive Load in UI Design</h4>
         <span class="font-mono text-[10px] text-muted truncate uppercase tracking-wider block">nngroup.com</span>
       </div>
-      <span class="material-symbols-outlined text-[18px] text-muted opacity-0 group-hover:opacity-100 transition-opacity">drag_indicator</span>
+      <span class="material-symbols-outlined text-[18px] text-muted opacity-0 group-hover:opacity-100 transition-opacity">open_in_new</span>
     </div>
-    <div class="bg-warm rounded-card p-3 h-[76px] flex items-center gap-3 group cursor-grab hover:shadow-paper border border-transparent hover:border-grid/60 transition-all">
+    <div data-source-type="pdf" class="bg-warm rounded-card p-3 h-[76px] flex items-center gap-3 group cursor-pointer hover:shadow-paper border border-transparent hover:border-grid/60 transition-all" onclick="openReader('Mental Models 2024','local file')">
       <div class="w-9 h-9 rounded-xl bg-surface flex items-center justify-center shrink-0 shadow-paper text-[#4A6FA5]">
         <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1">picture_as_pdf</span>
       </div>
@@ -123,9 +123,9 @@
         <h4 class="font-semibold text-sm truncate mb-0.5">Mental_Models_2024.pdf</h4>
         <span class="font-mono text-[10px] text-muted truncate uppercase tracking-wider block">local file</span>
       </div>
-      <span class="material-symbols-outlined text-[18px] text-muted opacity-0 group-hover:opacity-100 transition-opacity">drag_indicator</span>
+      <span class="material-symbols-outlined text-[18px] text-muted opacity-0 group-hover:opacity-100 transition-opacity">open_in_new</span>
     </div>
-    <div class="bg-warm rounded-card p-3 h-[76px] flex items-center gap-3 group cursor-grab hover:shadow-paper border border-transparent hover:border-grid/60 transition-all">
+    <div data-source-type="web" class="bg-warm rounded-card p-3 h-[76px] flex items-center gap-3 group cursor-pointer hover:shadow-paper border border-transparent hover:border-grid/60 transition-all" onclick="openReader('The Evolution of Note-taking','medium.com')">
       <div class="w-9 h-9 rounded-xl bg-surface flex items-center justify-center shrink-0 shadow-paper text-accent">
         <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1">public</span>
       </div>
@@ -133,9 +133,9 @@
         <h4 class="font-semibold text-sm truncate mb-0.5">The Evolution of Note-taking</h4>
         <span class="font-mono text-[10px] text-muted truncate uppercase tracking-wider block">medium.com</span>
       </div>
-      <span class="material-symbols-outlined text-[18px] text-muted opacity-0 group-hover:opacity-100 transition-opacity">drag_indicator</span>
+      <span class="material-symbols-outlined text-[18px] text-muted opacity-0 group-hover:opacity-100 transition-opacity">open_in_new</span>
     </div>
-    <div class="bg-warm rounded-card p-3 h-[76px] flex items-center gap-3 group cursor-grab hover:shadow-paper border border-transparent hover:border-grid/60 transition-all">
+    <div data-source-type="text" class="bg-warm rounded-card p-3 h-[76px] flex items-center gap-3 group cursor-pointer hover:shadow-paper border border-transparent hover:border-grid/60 transition-all" onclick="openReader('Meeting Notes — Synthesis','text snippet')">
       <div class="w-9 h-9 rounded-xl bg-surface flex items-center justify-center shrink-0 shadow-paper text-muted">
         <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1">notes</span>
       </div>
@@ -143,15 +143,15 @@
         <h4 class="font-semibold text-sm truncate mb-0.5">Meeting Notes — Synthesis</h4>
         <span class="font-mono text-[10px] text-muted truncate uppercase tracking-wider block">text snippet</span>
       </div>
-      <span class="material-symbols-outlined text-[18px] text-muted opacity-0 group-hover:opacity-100 transition-opacity">drag_indicator</span>
+      <span class="material-symbols-outlined text-[18px] text-muted opacity-0 group-hover:opacity-100 transition-opacity">open_in_new</span>
     </div>
   </div>
 
   <!-- Footer -->
   <div class="px-5 py-3 border-t border-grid/60 shrink-0 flex justify-center">
-    <span class="font-mono text-[11px] text-muted flex items-center gap-1.5">
+    <span id="inbox-footer" class="font-mono text-[11px] text-muted flex items-center gap-1.5">
       <span class="material-symbols-outlined text-[13px]">done_all</span>
-      Inbox zero
+      4 sources
     </span>
   </div>
 </aside>
@@ -299,7 +299,7 @@
   </div>
 
   <!-- Messages -->
-  <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
+  <div id="chat-messages" class="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
     <!-- AI -->
     <div class="flex gap-2.5">
       <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary mt-0.5">
@@ -361,8 +361,8 @@
   <!-- Input -->
   <div class="p-4 border-t border-grid/60 shrink-0 bg-surface">
     <div class="relative flex items-end bg-warm border border-grid/80 rounded-card focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10 transition-all p-1">
-      <textarea class="w-full bg-transparent border-none focus:ring-0 resize-none py-2.5 px-3 text-sm max-h-[100px] text-text placeholder:text-muted" placeholder="Ask about your canvas…" rows="1"></textarea>
-      <button class="w-9 h-9 shrink-0 bg-primary hover:bg-[#d14f3c] text-white rounded-xl flex items-center justify-center transition-colors mb-0.5 mr-0.5">
+      <textarea id="chat-input" class="w-full bg-transparent border-none focus:ring-0 resize-none py-2.5 px-3 text-sm max-h-[100px] text-text placeholder:text-muted" placeholder="Ask about your canvas…" rows="1"></textarea>
+      <button id="chat-send" class="w-9 h-9 shrink-0 bg-primary hover:bg-[#d14f3c] text-white rounded-xl flex items-center justify-center transition-colors mb-0.5 mr-0.5">
         <span class="material-symbols-outlined text-[18px]">arrow_upward</span>
       </button>
     </div>
@@ -513,6 +513,132 @@
 
   /* ── Synthesize cluster button also calls showChat ── */
   window.openChat = showChat;
+
+  /* ── Filter pills ──────────────────────────────── */
+  document.querySelectorAll('.filter-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const filter = btn.dataset.filter;
+      document.querySelectorAll('.filter-pill').forEach(b => {
+        b.classList.remove('bg-text', 'text-surface');
+        b.classList.add('bg-warm', 'text-muted');
+      });
+      btn.classList.add('bg-text', 'text-surface');
+      btn.classList.remove('bg-warm', 'text-muted');
+      document.querySelectorAll('#source-list [data-source-type]').forEach(card => {
+        card.style.display = (filter === 'all' || card.dataset.sourceType === filter) ? '' : 'none';
+      });
+    });
+  });
+
+  /* ── Import Source ─────────────────────────────── */
+  function importSource() {
+    const input = document.getElementById('url-input');
+    const btn   = document.getElementById('import-btn');
+    const url   = input.value.trim();
+    if (!url) {
+      input.style.outline = '2px solid #E25F4C';
+      setTimeout(() => input.style.outline = '', 1200);
+      return;
+    }
+    let domain = url;
+    try { domain = new URL(url.startsWith('http') ? url : 'https://' + url).hostname.replace('www.',''); } catch {}
+    const title = domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1) + ' — Research';
+
+    btn.innerHTML = '<span class="material-symbols-outlined text-[16px]" style="animation:spin 0.8s linear infinite">progress_activity</span> Importing…';
+    btn.disabled = true;
+
+    setTimeout(() => {
+      const list = document.getElementById('source-list');
+      const card = document.createElement('div');
+      card.dataset.sourceType = 'web';
+      card.className = 'bg-warm rounded-card p-3 h-[76px] flex items-center gap-3 group cursor-pointer hover:shadow-paper border border-primary/40 transition-all';
+      card.setAttribute('onclick', `openReader('${title.replace(/'/g,"\\'")}','${domain}')`);
+      card.innerHTML = `
+        <div class="w-9 h-9 rounded-xl bg-surface flex items-center justify-center shrink-0 shadow-paper text-primary">
+          <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1">public</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h4 class="font-semibold text-sm truncate mb-0.5">${title}</h4>
+          <span class="font-mono text-[10px] text-muted truncate uppercase tracking-wider block">${domain}</span>
+        </div>
+        <span class="material-symbols-outlined text-[18px] text-muted opacity-0 group-hover:opacity-100 transition-opacity">open_in_new</span>`;
+      list.insertBefore(card, list.firstChild);
+
+      const count = list.querySelectorAll('[data-source-type]').length;
+      document.getElementById('inbox-footer').innerHTML =
+        `<span class="material-symbols-outlined text-[13px]">inbox</span> ${count} source${count !== 1 ? 's' : ''}`;
+
+      input.value = '';
+      btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">check_circle</span> Imported!';
+      setTimeout(() => {
+        btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">download</span> Import Source';
+        btn.disabled = false;
+      }, 1800);
+    }, 900);
+  }
+
+  document.getElementById('import-btn').addEventListener('click', importSource);
+  document.getElementById('url-input').addEventListener('keydown', e => { if (e.key === 'Enter') importSource(); });
+
+  /* ── Chat send ─────────────────────────────────── */
+  const AI_RESPONSES = [
+    "Based on your canvas sources, I see a strong thread of contextual persistence — users retain more when spatial layout mirrors their mental model.",
+    "Interesting tension between your sources: cognitive load theory suggests simplicity, but your spatial interface papers argue that complexity, when navigable, actually helps recall.",
+    "These four sources converge on a single insight: the future of research tools is about making connections visible, not just storing information.",
+    "Your 'Meeting Notes — Synthesis' source is the bridge here. It ties the theoretical frameworks in the academic papers to real workflow patterns.",
+  ];
+  let aiMsgIdx = 0;
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function sendChat() {
+    const input = document.getElementById('chat-input');
+    const msgs  = document.getElementById('chat-messages');
+    const text  = input.value.trim();
+    if (!text) return;
+
+    const userEl = document.createElement('div');
+    userEl.className = 'flex justify-end';
+    userEl.innerHTML = `<div class="bg-grid text-text px-4 py-2.5 rounded-card rounded-br-sm max-w-[85%] text-sm leading-relaxed">${escHtml(text)}</div>`;
+    msgs.appendChild(userEl);
+    input.value = '';
+    msgs.scrollTop = msgs.scrollHeight;
+
+    const typingEl = document.createElement('div');
+    typingEl.className = 'flex gap-2.5 items-center';
+    typingEl.innerHTML = `
+      <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary">
+        <span class="material-symbols-outlined text-[16px]">psychology</span>
+      </div>
+      <div class="flex gap-1 px-1">
+        <div class="w-1.5 h-1.5 bg-primary rounded-full dot1"></div>
+        <div class="w-1.5 h-1.5 bg-primary rounded-full dot2"></div>
+        <div class="w-1.5 h-1.5 bg-primary rounded-full dot3"></div>
+      </div>`;
+    msgs.appendChild(typingEl);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    setTimeout(() => {
+      typingEl.remove();
+      const aiEl = document.createElement('div');
+      aiEl.className = 'flex gap-2.5';
+      aiEl.innerHTML = `
+        <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary mt-0.5">
+          <span class="material-symbols-outlined text-[16px]">psychology</span>
+        </div>
+        <p class="flex-1 text-sm leading-relaxed text-text pt-0.5">${AI_RESPONSES[aiMsgIdx % AI_RESPONSES.length]}</p>`;
+      aiMsgIdx++;
+      msgs.appendChild(aiEl);
+      msgs.scrollTop = msgs.scrollHeight;
+    }, 1100);
+  }
+
+  document.getElementById('chat-send').addEventListener('click', sendChat);
+  document.getElementById('chat-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+  });
 </script>
 </body>
 </html>
