@@ -171,7 +171,17 @@ h2 {
   transform: translateX(2px);
 }
 .canvas-cta-icon { font-size: 14px; }
-.canvas-cta-arrow { margin-left: auto; opacity: 0.7; }
+.canvas-cta-beta {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: rgba(226,95,76,0.15);
+  color: #E25F4C;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(226,95,76,0.3);
+}
 
 .history-panel {
   margin-top: auto;
