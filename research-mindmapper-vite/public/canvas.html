@@ -147,14 +147,14 @@
       </button>
     </div>
 
-    <!-- URL import -->
+    <!-- Query / URL input -->
     <div class="mt-md flex items-center bg-surface-container-lowest border border-outline-variant/40 rounded-xl h-10 px-sm focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/10 transition-all">
-      <span class="material-symbols-outlined text-outline text-[16px] mr-xs shrink-0">link</span>
-      <input id="url-input" class="bg-transparent border-none focus:ring-0 text-body-sm font-mono text-on-surface placeholder:text-outline w-full p-0 outline-none" placeholder="Paste a URL…" type="text" />
+      <span id="input-icon" class="material-symbols-outlined text-outline text-[16px] mr-xs shrink-0">search</span>
+      <input id="url-input" class="bg-transparent border-none focus:ring-0 text-body-sm font-mono text-on-surface placeholder:text-outline w-full p-0 outline-none" placeholder="URL or research topic…" type="text" />
     </div>
     <button id="import-btn" class="w-full mt-sm bg-primary hover:bg-[#8f2d1f] text-on-primary font-body text-btn py-sm rounded-xl transition-all flex items-center justify-center gap-xs h-10 shadow-paper hover:shadow-floating active:scale-95">
-      <span class="material-symbols-outlined text-[16px]">download</span>
-      Import Source
+      <span class="material-symbols-outlined text-[16px]">auto_awesome</span>
+      Research
     </button>
   </div>
 
@@ -880,10 +880,14 @@
   }
 
   /* ── Import Source ─────────────────────────────── */
+  function isUrl(s) {
+    return /^https?:\/\//i.test(s) || /^(www\.)?[\w-]+\.[a-z]{2,}(\/|$)/i.test(s);
+  }
+
   async function importSource() {
     const input = document.getElementById('url-input');
     const btn   = document.getElementById('import-btn');
-    const url   = input.value.trim();
+    const rawInput = input.value.trim();
 
     /* Wait for Clerk, then gate on sign-in */
     const signedIn = await ensureSignedIn();
@@ -905,97 +909,142 @@
       return;
     }
 
-    if (!url) {
+    if (!rawInput) {
       input.style.outline = '2px solid #a63425';
       input.style.outlineOffset = '2px';
       setTimeout(() => { input.style.outline = ''; input.style.outlineOffset = ''; }, 1200);
       return;
     }
 
-    let domain = url;
-    try { domain = new URL(url.startsWith('http') ? url : 'https://' + url).hostname.replace('www.',''); } catch {}
-
     const setStatus = msg => {
       btn.innerHTML = `<span class="material-symbols-outlined text-[16px]" style="animation:spin 0.8s linear infinite">progress_activity</span> ${msg}`;
       btn.disabled = true;
     };
-    setStatus('Importing…');
+    const resetBtn = () => {
+      btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">auto_awesome</span> Research';
+      btn.disabled = false;
+    };
+
+    const urlMode = isUrl(rawInput);
 
     try {
-      /* Step 1: create source */
-      const source = await requestJson('/api/sources', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url.startsWith('http') ? url : 'https://' + url, topic: domain }),
-      });
+      let sessionId, sessionTitle, summary, nodes;
 
-      /* YouTube: poll async job */
-      if (source.status === 'pending' && source.job_id) {
-        setStatus('Transcribing…');
-        const job = await pollJob(source.job_id, msg => setStatus(msg));
-        if (job.status === 'failed' || !job.chunks_count) {
-          throw new Error(job.error || job.warnings?.[0] || 'Could not extract transcript.');
+      if (urlMode) {
+        /* ── URL / YouTube import flow ─────────────────── */
+        const url = rawInput.startsWith('http') ? rawInput : 'https://' + rawInput;
+        let domain = rawInput;
+        try { domain = new URL(url).hostname.replace('www.',''); } catch {}
+
+        setStatus('Importing…');
+
+        const source = await requestJson('/api/sources', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, topic: domain }),
+        });
+
+        if (source.status === 'pending' && source.job_id) {
+          setStatus('Transcribing…');
+          const job = await pollJob(source.job_id, msg => setStatus(msg));
+          if (job.status === 'failed' || !job.chunks_count) {
+            throw new Error(job.error || job.warnings?.[0] || 'Could not extract transcript.');
+          }
         }
+
+        setStatus('Synthesizing…');
+        const result = await requestJson(`/api/sessions/${source.session_id}/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic: domain, depth: 'Basic', output: 'Mindmap' }),
+        });
+
+        sessionId    = source.session_id;
+        sessionTitle = result.topic || result.root || domain;
+        summary      = result.summary || '';
+        nodes        = result.nodes   || [];
+
+        sessions[sessionId] = {
+          title: sessionTitle, domain,
+          summary, nodes,
+          sources: [...(result.sources || []), ...(result.citations || [])],
+        };
+
+        /* Add sidebar card */
+        const isYT = /youtu/.test(url);
+        const list = document.getElementById('source-list');
+        const sideCard = document.createElement('div');
+        sideCard.dataset.sourceType = isYT ? 'video' : 'web';
+        sideCard.className = 'group flex items-center gap-md p-md bg-surface-container-lowest rounded-xl border border-primary/30 cursor-pointer hover:shadow-paper transition-all h-[72px] shrink-0';
+        sideCard.addEventListener('click', () => openReader(sessionTitle, domain, sessionId));
+        sideCard.innerHTML = `
+          <div class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings:'FILL' 1">${isYT ? 'play_circle' : 'public'}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">${escHtml(sessionTitle)}</h4>
+            <span class="font-mono text-label-mono text-outline truncate uppercase block mt-[2px]">${escHtml(domain)}</span>
+          </div>
+          <span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity shrink-0">open_in_new</span>`;
+        list.insertBefore(sideCard, list.firstChild);
+        const total = list.querySelectorAll('[data-source-type]').length;
+        document.getElementById('inbox-footer').innerHTML =
+          `<span class="material-symbols-outlined text-[13px]">inbox</span> ${total} source${total !== 1 ? 's' : ''}`;
+
+      } else {
+        /* ── Topic / text query research flow ─────────── */
+        setStatus('Researching…');
+        const result = await requestJson('/api/research', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: rawInput, depth: 'Basic', output: 'Mindmap', source: 'Web' }),
+        });
+
+        sessionId    = result.session_id;
+        sessionTitle = result.topic || result.root || rawInput;
+        summary      = result.summary || '';
+        nodes        = result.nodes   || [];
+
+        sessions[sessionId] = {
+          title: sessionTitle, domain: rawInput,
+          summary, nodes,
+          sources: [...(result.sources || []), ...(result.citations || [])],
+        };
+
+        /* Add sidebar card for topic research */
+        const list = document.getElementById('source-list');
+        const sideCard = document.createElement('div');
+        sideCard.dataset.sourceType = 'web';
+        sideCard.className = 'group flex items-center gap-md p-md bg-surface-container-lowest rounded-xl border border-secondary/30 cursor-pointer hover:shadow-paper transition-all h-[72px] shrink-0';
+        sideCard.addEventListener('click', () => openReader(sessionTitle, rawInput, sessionId));
+        sideCard.innerHTML = `
+          <div class="w-9 h-9 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings:'FILL' 1">auto_awesome</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">${escHtml(sessionTitle)}</h4>
+            <span class="font-mono text-label-mono text-outline truncate uppercase block mt-[2px]">AI Research</span>
+          </div>
+          <span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity shrink-0">open_in_new</span>`;
+        list.insertBefore(sideCard, list.firstChild);
+        const total = list.querySelectorAll('[data-source-type]').length;
+        document.getElementById('inbox-footer').innerHTML =
+          `<span class="material-symbols-outlined text-[13px]">inbox</span> ${total} source${total !== 1 ? 's' : ''}`;
       }
 
-      /* Step 2: generate research */
-      setStatus('Synthesizing…');
-      const result = await requestJson(`/api/sessions/${source.session_id}/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: domain, depth: 'Basic', output: 'Mindmap' }),
-      });
-
-      currentSessionId = source.session_id;
-      const sessionTitle = result.topic || result.root || domain;
-
-      sessions[source.session_id] = {
-        title:   sessionTitle,
-        domain,
-        summary: result.summary || '',
-        nodes:   result.nodes   || [],
-        sources: [...(result.sources || []), ...(result.citations || [])],
-      };
+      currentSessionId = sessionId;
       updateContextBadge();
 
-      /* Add sidebar card */
-      const isYT = /youtu/.test(url);
-      const list = document.getElementById('source-list');
-      const card = document.createElement('div');
-      card.dataset.sourceType = isYT ? 'video' : 'web';
-      card.className = 'group flex items-center gap-md p-md bg-surface-container-lowest rounded-xl border border-primary/30 cursor-pointer hover:shadow-paper transition-all h-[72px] shrink-0';
-      card.addEventListener('click', () => openReader(sessionTitle, domain, source.session_id));
-      card.innerHTML = `
-        <div class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-          <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings:'FILL' 1">${isYT ? 'play_circle' : 'public'}</span>
-        </div>
-        <div class="flex-1 min-w-0">
-          <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">${escHtml(sessionTitle)}</h4>
-          <span class="font-mono text-label-mono text-outline truncate uppercase block mt-[2px]">${domain}</span>
-        </div>
-        <span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity shrink-0">open_in_new</span>`;
-      list.insertBefore(card, list.firstChild);
-
-      const total = list.querySelectorAll('[data-source-type]').length;
-      document.getElementById('inbox-footer').innerHTML =
-        `<span class="material-symbols-outlined text-[13px]">inbox</span> ${total} source${total !== 1 ? 's' : ''}`;
-
-      /* Add AI research card to canvas */
-      addCanvasCard(source.session_id, sessionTitle, result.summary || '', result.nodes || []);
+      /* Add canvas card and pan to it */
+      addCanvasCard(sessionId, sessionTitle, summary, nodes);
 
       input.value = '';
-      btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">check_circle</span> Imported!';
-      setTimeout(() => {
-        btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">download</span> Import Source';
-        btn.disabled = false;
-      }, 1800);
+      btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">check_circle</span> Done!';
+      setTimeout(resetBtn, 1800);
 
     } catch (err) {
       btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">error</span> Failed';
-      setTimeout(() => {
-        btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">download</span> Import Source';
-        btn.disabled = false;
-      }, 2000);
+      setTimeout(resetBtn, 2000);
       /* Show error in chat */
       const msgs = document.getElementById('chat-messages');
       const errEl = document.createElement('div');
@@ -1003,7 +1052,7 @@
       errEl.innerHTML = `
         <div class="flex items-center gap-xs">
           <span class="material-symbols-outlined text-[#ba1a1a] text-sm">error</span>
-          <span class="font-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">Import Error</span>
+          <span class="font-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">Research Error</span>
         </div>
         <div class="font-body text-body-sm text-[#ba1a1a] leading-relaxed">${escHtml(err.message)}</div>`;
       msgs.appendChild(errEl);
@@ -1014,28 +1063,38 @@
 
   document.getElementById('import-btn').addEventListener('click', importSource);
   document.getElementById('url-input').addEventListener('keydown', e => { if (e.key === 'Enter') importSource(); });
+  document.getElementById('url-input').addEventListener('input', e => {
+    const icon = document.getElementById('input-icon');
+    if (icon) icon.textContent = isUrl(e.target.value.trim()) ? 'link' : 'search';
+  });
 
   /* ── Add AI research card to canvas ───────────── */
   let canvasCardOffset = 0;
-  const CANVAS_CARD_POSITIONS = [
-    { left: '120px', top: '820px' },
-    { left: '490px', top: '900px' },
-    { left: '840px', top: '820px' },
-    { left: '300px', top: '1100px' },
-    { left: '680px', top: '1100px' },
-  ];
+
+  function panToCard(wx, wy) {
+    const canvasEl = document.getElementById('canvas');
+    ox = canvasEl.offsetWidth  / 2 - (wx + 150) * scale;
+    oy = canvasEl.offsetHeight / 2 - (wy + 100) * scale;
+    lx = ox; ly = oy;
+    world.style.transform = `scale(${scale}) translate(${ox/scale}px, ${oy/scale}px)`;
+  }
 
   function addCanvasCard(sessionId, title, summary, nodes) {
-    const pos = CANVAS_CARD_POSITIONS[canvasCardOffset % CANVAS_CARD_POSITIONS.length];
+    /* Place cards in a grid starting at (80, 80), offset each new card */
+    const col = canvasCardOffset % 3;
+    const row = Math.floor(canvasCardOffset / 3);
+    const wx  = 80  + col * 340;
+    const wy  = 80  + row * 260;
     canvasCardOffset++;
+
     const previewTags = (nodes || []).slice(0, 3)
       .map(n => n.title || n[0] || '').filter(Boolean)
       .map(t => `<span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">${escHtml(t)}</span>`)
       .join('');
     const card = document.createElement('div');
     card.className = 'card-hover absolute bg-surface-container-lowest rounded-xl p-lg w-[300px] shadow-paper border border-primary/20 cursor-pointer hover:shadow-floating';
-    card.style.left = pos.left;
-    card.style.top  = pos.top;
+    card.style.left = `${wx}px`;
+    card.style.top  = `${wy}px`;
     card.addEventListener('click', () => openReader(title, sessionId.split('-')[0], sessionId));
     card.innerHTML = `
       <div class="flex justify-between items-start mb-sm">
@@ -1046,6 +1105,7 @@
       <p class="font-body text-body-sm text-on-surface-variant leading-relaxed mb-md" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${escHtml(summary || 'Research synthesis generated from your source.')}</p>
       <div class="flex gap-xs flex-wrap">${previewTags}</div>`;
     world.appendChild(card);
+    panToCard(wx, wy);
   }
 
   /* ── Chat send ─────────────────────────────────── */
