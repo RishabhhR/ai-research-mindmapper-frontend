@@ -114,7 +114,7 @@
     </a>
     <span class="font-display text-headline-md font-bold text-primary leading-none">Aletheia Canvas</span>
     <nav class="hidden md:flex ml-lg gap-lg">
-      <a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-body-sm font-body" href="#">Workspace</a>
+      <a class="text-primary font-semibold border-b-2 border-primary transition-colors duration-200 text-body-sm font-body pb-xs" href="#">Workspace</a>
       <a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-body-sm font-body" href="#">Threads</a>
       <a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-body-sm font-body" href="#">Library</a>
       <a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-body-sm font-body" href="#">Timeline</a>
@@ -138,9 +138,14 @@
   <!-- Sidebar Header -->
   <div class="px-lg pt-lg pb-md border-b border-outline-variant/20 shrink-0">
     <div class="flex items-center justify-between mb-xs">
-      <div>
-        <h2 class="font-display text-headline-sm text-primary leading-tight">Sources</h2>
-        <p class="font-body text-body-sm text-on-surface-variant opacity-70">Active Workspace</p>
+      <div class="flex items-center gap-sm">
+        <div class="w-9 h-9 rounded-full bg-surface-dim border border-outline-variant flex items-center justify-center shrink-0">
+          <span class="font-mono text-[11px] font-bold text-on-surface-variant select-none">YOU</span>
+        </div>
+        <div>
+          <h2 class="font-display text-headline-sm text-primary leading-tight">Sources</h2>
+          <p class="font-body text-body-sm text-on-surface-variant opacity-70">Active Workspace</p>
+        </div>
       </div>
       <button id="close-sidebar" class="w-8 h-8 rounded-lg flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container transition-all">
         <span class="material-symbols-outlined text-[18px]">chevron_left</span>
@@ -170,75 +175,77 @@
   <div id="source-list" class="flex-1 overflow-y-auto px-md py-md flex flex-col gap-sm">
 
     <div data-source-type="web"
-      class="group flex items-center gap-md p-md bg-surface-container-lowest rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:border-primary/20 transition-all h-[72px] shrink-0"
+      class="group flex items-center gap-sm p-sm bg-surface-container-high/60 rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:bg-surface-container-highest transition-all h-[80px] shrink-0 shadow-paper"
       onclick="openReader('Cognitive Load in UI Design','nngroup.com')">
-      <div class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings:'FILL' 1">article</span>
+      <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-primary text-[22px]" style="font-variation-settings:'FILL' 1">article</span>
       </div>
       <div class="flex-1 min-w-0">
         <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">Cognitive Load in UI Design</h4>
-        <span class="font-mono text-label-mono text-outline truncate uppercase block mt-[2px]">nngroup.com</span>
+        <p class="font-mono text-[10px] text-outline truncate uppercase mt-[3px]">nngroup.com · Web</p>
       </div>
-      <span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity shrink-0">open_in_new</span>
     </div>
 
     <div data-source-type="pdf"
-      class="group flex items-center gap-md p-md bg-surface-container-lowest rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:border-primary/20 transition-all h-[72px] shrink-0"
+      class="group flex items-center gap-sm p-sm bg-surface-container-high/60 rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:bg-surface-container-highest transition-all h-[80px] shrink-0 shadow-paper border-primary/30 bg-primary/5"
       onclick="openReader('Mental Models 2024','local file')">
-      <div class="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-blue-600 text-[18px]" style="font-variation-settings:'FILL' 1">picture_as_pdf</span>
+      <div class="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-primary text-[22px]" style="font-variation-settings:'FILL' 1">picture_as_pdf</span>
       </div>
       <div class="flex-1 min-w-0">
         <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">Mental_Models_2024.pdf</h4>
-        <span class="font-mono text-label-mono text-outline truncate uppercase block mt-[2px]">local file</span>
+        <p class="font-mono text-[10px] text-primary truncate uppercase mt-[3px]">Active · 12 Highlights</p>
       </div>
-      <span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity shrink-0">open_in_new</span>
     </div>
 
     <div data-source-type="web"
-      class="group flex items-center gap-md p-md bg-surface-container-lowest rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:border-primary/20 transition-all h-[72px] shrink-0"
+      class="group flex items-center gap-sm p-sm bg-surface-container-high/60 rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:bg-surface-container-highest transition-all h-[80px] shrink-0 shadow-paper"
       onclick="openReader('The Evolution of Note-taking','medium.com')">
-      <div class="w-9 h-9 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings:'FILL' 1">public</span>
+      <div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-secondary text-[22px]" style="font-variation-settings:'FILL' 1">public</span>
       </div>
       <div class="flex-1 min-w-0">
         <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">The Evolution of Note-taking</h4>
-        <span class="font-mono text-label-mono text-outline truncate uppercase block mt-[2px]">medium.com</span>
+        <p class="font-mono text-[10px] text-outline truncate uppercase mt-[3px]">medium.com · Added 5h ago</p>
       </div>
-      <span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity shrink-0">open_in_new</span>
     </div>
 
     <div data-source-type="text"
-      class="group flex items-center gap-md p-md bg-surface-container-lowest rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:border-primary/20 transition-all h-[72px] shrink-0"
+      class="group flex items-center gap-sm p-sm bg-surface-container-high/60 rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:bg-surface-container-highest transition-all h-[80px] shrink-0 shadow-paper"
       onclick="openReader('Meeting Notes — Synthesis','text snippet')">
-      <div class="w-9 h-9 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-outline text-[18px]" style="font-variation-settings:'FILL' 1">notes</span>
+      <div class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-on-surface-variant text-[22px]" style="font-variation-settings:'FILL' 1">notes</span>
       </div>
       <div class="flex-1 min-w-0">
         <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">Meeting Notes — Synthesis</h4>
-        <span class="font-mono text-label-mono text-outline truncate uppercase block mt-[2px]">text snippet</span>
+        <p class="font-mono text-[10px] text-outline truncate uppercase mt-[3px]">Text File · Added 10m ago</p>
       </div>
-      <span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity shrink-0">open_in_new</span>
     </div>
 
   </div>
 
   <!-- Sidebar footer -->
-  <div class="px-lg py-md border-t border-outline-variant/20 shrink-0 flex items-center justify-between">
-    <span id="inbox-footer" class="font-mono text-label-mono text-outline flex items-center gap-xs">
-      <span class="material-symbols-outlined text-[13px]">done_all</span>
-      4 sources
-    </span>
-    <div class="flex gap-xs">
-      <a class="flex items-center gap-md px-sm py-xs text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
-        <span class="material-symbols-outlined text-[16px]">database</span>
-      </a>
-      <a class="flex items-center gap-md px-sm py-xs text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
-        <span class="material-symbols-outlined text-[16px]">history</span>
-      </a>
-      <a class="flex items-center gap-md px-sm py-xs text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
-        <span class="material-symbols-outlined text-[16px]">grade</span>
-      </a>
+  <div class="px-md pt-sm pb-md border-t border-outline-variant/20 shrink-0">
+    <button class="w-full py-sm border border-dashed border-outline-variant rounded-xl font-mono text-label-mono text-outline hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-xs mb-sm">
+      <span class="material-symbols-outlined text-sm">add_circle</span>
+      Upload Local File
+    </button>
+    <div class="flex items-center justify-between">
+      <span id="inbox-footer" class="font-mono text-label-mono text-outline flex items-center gap-xs">
+        <span class="material-symbols-outlined text-[13px]">inbox</span>
+        4 sources
+      </span>
+      <div class="flex gap-xs">
+        <a class="p-xs text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#" title="Library">
+          <span class="material-symbols-outlined text-[16px]">database</span>
+        </a>
+        <a class="p-xs text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#" title="Recent">
+          <span class="material-symbols-outlined text-[16px]">history</span>
+        </a>
+        <a class="p-xs text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#" title="Starred">
+          <span class="material-symbols-outlined text-[16px]">grade</span>
+        </a>
+      </div>
     </div>
   </div>
 </aside>
@@ -289,70 +296,70 @@
       style="left:500px;top:260px;width:580px;height:500px;background:rgba(166,52,37,0.03);filter:blur(48px);"></div>
 
     <!-- Card 1 -->
-    <div class="card-hover absolute bg-surface-container-lowest rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-pointer hover:shadow-floating"
+    <div class="card-hover absolute bg-surface rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-pointer hover:shadow-floating"
       style="left:120px;top:180px;" onclick="openReader('Knowledge Graphs 101','towardsdatascience.com')">
-      <div class="flex justify-between items-start mb-sm">
+      <div class="flex justify-between items-start mb-md">
         <span class="bg-primary/10 text-primary px-sm py-xs rounded font-mono text-label-mono uppercase tracking-widest text-[10px]">Primary Thesis</span>
         <span class="material-symbols-outlined text-outline text-[18px]">more_horiz</span>
       </div>
       <h3 class="font-display text-headline-sm mb-sm">Knowledge Graphs 101</h3>
-      <p class="font-body text-body-sm text-on-surface-variant leading-relaxed mb-md">
+      <p class="font-body text-body-md text-on-surface-variant leading-relaxed mb-md">
         An introduction to structuring data with interconnected entities and relationships for better machine understanding.
       </p>
       <div class="flex gap-xs flex-wrap">
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">#graphs</span>
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">#knowledge</span>
+        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#graphs</span>
+        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#knowledge</span>
       </div>
     </div>
 
     <!-- Card 2 -->
-    <div class="card-hover absolute bg-surface-container-lowest rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-pointer hover:shadow-floating rotate-1"
+    <div class="card-hover absolute bg-surface rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-pointer hover:shadow-floating rotate-1"
       style="left:490px;top:280px;" onclick="openReader('Understanding Context in AI','arxiv.org')">
-      <div class="flex justify-between items-start mb-sm">
+      <div class="flex justify-between items-start mb-md">
         <span class="bg-secondary/10 text-on-secondary-fixed-variant px-sm py-xs rounded font-mono text-label-mono uppercase tracking-widest text-[10px]">Supporting Evidence</span>
         <span class="material-symbols-outlined text-outline text-[18px]">attachment</span>
       </div>
       <h3 class="font-display text-headline-sm mb-sm">Understanding Context in AI</h3>
-      <p class="font-body text-body-sm text-on-surface-variant leading-relaxed mb-md">
+      <p class="font-body text-body-md text-on-surface-variant leading-relaxed mb-md">
         Exploring mechanisms that allow language models to retain and utilize contextual information over long sequences.
       </p>
       <div class="flex gap-xs flex-wrap">
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">#context</span>
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">#llm</span>
+        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#context</span>
+        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#llm</span>
       </div>
     </div>
 
     <!-- Card 3 -->
-    <div class="card-hover absolute bg-surface-container-lowest rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-pointer hover:shadow-floating -rotate-1"
+    <div class="card-hover absolute bg-surface rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-pointer hover:shadow-floating -rotate-1"
       style="left:450px;top:560px;" onclick="openReader('Memory Architectures','acm.org')">
-      <div class="flex justify-between items-start mb-sm">
+      <div class="flex justify-between items-start mb-md">
         <span class="bg-outline-variant/30 text-on-tertiary-fixed-variant px-sm py-xs rounded font-mono text-label-mono uppercase tracking-widest text-[10px]">Reference</span>
         <span class="material-symbols-outlined text-outline text-[18px]">more_horiz</span>
       </div>
       <h3 class="font-display text-headline-sm mb-sm">Memory Architectures</h3>
-      <p class="font-body text-body-sm text-on-surface-variant leading-relaxed mb-md">
+      <p class="font-body text-body-md text-on-surface-variant leading-relaxed mb-md">
         A comparative study of short-term and long-term memory structures in modern neural networks and cognitive systems.
       </p>
       <div class="flex gap-xs flex-wrap">
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">#memory</span>
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">#architecture</span>
+        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#memory</span>
+        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#architecture</span>
       </div>
     </div>
 
     <!-- Card 4 -->
-    <div class="card-hover absolute bg-surface-container-lowest rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-pointer hover:shadow-floating rotate-1"
+    <div class="card-hover absolute bg-surface rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-pointer hover:shadow-floating rotate-1"
       style="left:840px;top:380px;" onclick="openReader('The Future of Interfaces','nngroup.com')">
-      <div class="flex justify-between items-start mb-sm">
+      <div class="flex justify-between items-start mb-md">
         <span class="bg-primary/10 text-primary px-sm py-xs rounded font-mono text-label-mono uppercase tracking-widest text-[10px]">Insight</span>
         <span class="material-symbols-outlined text-outline text-[18px]">more_horiz</span>
       </div>
       <h3 class="font-display text-headline-sm mb-sm">The Future of Interfaces</h3>
-      <p class="font-body text-body-sm text-on-surface-variant leading-relaxed mb-md">
+      <p class="font-body text-body-md text-on-surface-variant leading-relaxed mb-md">
         How spatial computing and conversational AI are reshaping UX paradigms beyond traditional screens and flat GUIs.
       </p>
       <div class="flex gap-xs flex-wrap">
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">#ux</span>
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">#spatial</span>
+        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#ux</span>
+        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#spatial</span>
       </div>
     </div>
 
@@ -381,7 +388,7 @@
       <div class="flex items-center gap-sm">
         <div class="bg-surface-container-highest px-md py-xs rounded-full border border-outline-variant/20 flex items-center gap-xs">
           <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-          <span class="font-mono text-label-mono text-on-surface-variant">Context: 4 Cards</span>
+          <span id="context-badge-text" class="font-mono text-label-mono text-on-surface-variant">Context: 4 Cards</span>
         </div>
         <button id="close-chat" class="w-8 h-8 rounded-lg flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container transition-all">
           <span class="material-symbols-outlined text-[18px]">chevron_right</span>
@@ -410,15 +417,15 @@
         <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">psychology</span>
         <span class="font-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">AI Synthesis Assistant</span>
       </div>
-      <div class="font-body text-body-sm text-on-surface-variant leading-relaxed">
-        I see you have 4 cards in your context focusing on knowledge structures and interface patterns. Based on these sources, I've identified a strong thread around contextual persistence. How can I help synthesize them?
+      <div class="font-body text-body-md text-on-surface-variant leading-relaxed">
+        Based on your active research cards, I've identified a strong correlation between haptic feedback and cognitive load reduction. I see 4 cards focused on knowledge structures and interface patterns. How can I help synthesize them?
       </div>
     </div>
 
     <!-- User message -->
     <div class="flex flex-col gap-xs items-end">
-      <div class="bg-surface-container-high p-md rounded-xl rounded-tr-sm max-w-[90%] shadow-paper border border-outline-variant/10">
-        <p class="font-body text-body-sm text-on-surface">Summarize the key findings from these cards.</p>
+      <div class="bg-[#E8E3DC] p-md rounded-xl rounded-tr-none max-w-[90%] shadow-paper border border-outline-variant/10">
+        <p class="font-body text-body-md text-on-surface">Summarize the key findings from these cards.</p>
       </div>
       <span class="font-mono text-[10px] text-outline px-xs uppercase tracking-tighter">Researcher</span>
     </div>
@@ -429,9 +436,9 @@
         <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">psychology</span>
         <span class="font-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">AI Synthesis Assistant</span>
       </div>
-      <div class="font-body text-body-sm text-on-surface-variant leading-relaxed">
+      <div class="font-body text-body-md text-on-surface-variant leading-relaxed">
         Based on your active research cards, here's a synthesized insight on spatial interface paradigms.
-        <div class="mt-md p-md bg-surface-container-lowest rounded-xl border-l-4 border-secondary shadow-paper">
+        <div class="mt-md p-md bg-white/40 border-l-4 border-secondary rounded-r-lg">
           <p class="font-body text-body-sm italic text-on-surface">"Users adapt faster to spatial, canvas-based interfaces when prior context is preserved across interactions — the map becomes the memory."</p>
           <div class="mt-sm font-mono text-[10px] text-primary uppercase tracking-widest">Generated Insight · Drag to Canvas</div>
         </div>
@@ -440,8 +447,8 @@
 
     <!-- User message 2 -->
     <div class="flex flex-col gap-xs items-end">
-      <div class="bg-surface-container-high p-md rounded-xl rounded-tr-sm max-w-[90%] shadow-paper border border-outline-variant/10">
-        <p class="font-body text-body-sm text-on-surface">Can you map this to the current user journey?</p>
+      <div class="bg-[#E8E3DC] p-md rounded-xl rounded-tr-none max-w-[90%] shadow-paper border border-outline-variant/10">
+        <p class="font-body text-body-md text-on-surface">Can you map this to the current user journey?</p>
       </div>
       <span class="font-mono text-[10px] text-outline px-xs uppercase tracking-tighter">Researcher</span>
     </div>
@@ -712,7 +719,7 @@
         <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1;">psychology</span>
         <span class="font-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">AI Synthesis Assistant</span>
       </div>
-      <div class="font-body text-body-sm text-on-surface-variant leading-relaxed">${answerHtml}</div>
+      <div class="font-body text-body-md text-on-surface-variant leading-relaxed">${answerHtml}</div>
       ${citationsHtml || ''}`;
     return el;
   }
@@ -744,44 +751,50 @@
   const overlay = document.getElementById('reader-overlay');
 
   function buildReaderContent(sess) {
-    const paras = (sess.summary || '')
-      .split(/\n\n+/).filter(Boolean).slice(0, 4)
-      .map(p => `<p class="font-body text-body-lg text-on-surface-variant leading-[1.8]">${escHtml(p)}</p>`)
-      .join('');
+    const rawParas = (sess.summary || '').split(/\n\n+/).filter(Boolean).slice(0, 6);
+    const paras = rawParas.map((p, i) => {
+      const cls = i === 0
+        ? 'font-body text-body-lg text-on-surface-variant leading-[1.8] first-letter:text-[3.5rem] first-letter:font-display first-letter:text-primary first-letter:mr-2 first-letter:float-left first-letter:leading-none'
+        : 'font-body text-body-lg text-on-surface-variant leading-[1.8]';
+      return `<p class="${cls}">${escHtml(p)}</p>`;
+    }).join('');
 
-    const nodeItems = (sess.nodes || []).slice(0, 5).map(n => {
+    const nodeItems = (sess.nodes || []).slice(0, 6).map((n, i) => {
       const t = n.title || n[0] || '';
       const d = n.description || n.body || n[1] || '';
+      const accentColors = ['border-primary','border-secondary','border-primary','border-secondary'];
+      const accent = accentColors[i % accentColors.length];
       return t ? `
-        <div class="p-md bg-surface-container-low rounded-xl border-l-4 border-primary shadow-paper">
+        <div class="p-lg bg-surface-container-low rounded-xl border-l-4 ${accent} shadow-paper">
           <h4 class="font-display text-headline-sm mb-xs text-on-surface">${escHtml(t)}</h4>
-          ${d ? `<p class="font-body text-body-sm text-on-surface-variant">${escHtml(d)}</p>` : ''}
+          ${d ? `<p class="font-body text-body-md text-on-surface-variant">${escHtml(d)}</p>` : ''}
         </div>` : '';
     }).join('');
 
-    const srcItems = (sess.sources || []).slice(0, 4).map(s => {
+    const srcItems = (sess.sources || []).slice(0, 5).map(s => {
       const t   = s.title || s[0] || '';
-      const url = s.url || s[5] || '';
-      const typ = s.type || s[1] || '';
+      const url = s.url   || s[5] || '';
+      const typ = s.type  || s[1] || '';
       return t ? `
-        <div class="flex items-center gap-sm py-xs border-b border-outline-variant/10">
-          <span class="material-symbols-outlined text-secondary text-sm">link</span>
+        <div class="flex items-center gap-sm py-sm border-b border-outline-variant/10">
+          <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1">link</span>
           ${url
             ? `<a href="${escHtml(url)}" target="_blank" rel="noreferrer" class="font-mono text-label-mono text-secondary hover:underline flex-1 truncate">${escHtml(t)}</a>`
             : `<span class="font-mono text-label-mono text-on-surface-variant flex-1 truncate">${escHtml(t)}</span>`}
-          ${typ ? `<span class="font-mono text-[10px] text-outline shrink-0">${escHtml(typ)}</span>` : ''}
+          ${typ ? `<span class="font-mono text-[10px] text-outline shrink-0 uppercase">${escHtml(typ)}</span>` : ''}
         </div>` : '';
     }).join('');
 
     return `
       <div class="max-w-[640px] mx-auto space-y-lg">
-        ${paras || '<p class="font-body text-body-lg text-on-surface-variant leading-[1.8]">AI-synthesized research from your imported source.</p>'}
-        ${nodeItems ? `<div class="space-y-md">${nodeItems}</div>` : ''}
+        ${paras || '<p class="font-body text-body-lg text-on-surface-variant leading-[1.8] first-letter:text-[3.5rem] first-letter:font-display first-letter:text-primary first-letter:mr-2 first-letter:float-left first-letter:leading-none">AI-synthesized research from your imported source.</p>'}
+        ${nodeItems ? `<div class="space-y-md pt-sm">${nodeItems}</div>` : ''}
         ${srcItems ? `
           <div class="pt-lg border-t border-outline-variant/20">
             <h4 class="font-mono text-label-mono text-outline uppercase tracking-widest mb-md">Referenced Sources</h4>
-            ${srcItems}
+            <div class="space-y-xs">${srcItems}</div>
           </div>` : ''}
+        <div class="h-8"></div>
       </div>`;
   }
 
@@ -875,7 +888,7 @@
 
   function updateContextBadge() {
     const count = Object.keys(sessions).length + 4; // +4 for demo cards
-    const badge = document.querySelector('#chat-panel .font-mono.text-label-mono.text-on-surface-variant');
+    const badge = document.getElementById('context-badge-text');
     if (badge) badge.textContent = `Context: ${count} Card${count !== 1 ? 's' : ''}`;
   }
 
@@ -1089,21 +1102,26 @@
 
     const previewTags = (nodes || []).slice(0, 3)
       .map(n => n.title || n[0] || '').filter(Boolean)
-      .map(t => `<span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">${escHtml(t)}</span>`)
+      .map(t => `<span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">${escHtml(t)}</span>`)
       .join('');
+    const nodeCount = (nodes || []).length;
     const card = document.createElement('div');
-    card.className = 'card-hover absolute bg-surface-container-lowest rounded-xl p-lg w-[300px] shadow-paper border border-primary/20 cursor-pointer hover:shadow-floating';
+    card.className = 'card-hover absolute bg-surface rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-pointer hover:shadow-floating';
     card.style.left = `${wx}px`;
     card.style.top  = `${wy}px`;
     card.addEventListener('click', () => openReader(title, sessionId.split('-')[0], sessionId));
     card.innerHTML = `
-      <div class="flex justify-between items-start mb-sm">
+      <div class="flex justify-between items-start mb-md">
         <span class="bg-primary/10 text-primary px-sm py-xs rounded font-mono text-label-mono uppercase tracking-widest text-[10px]">AI Synthesis</span>
         <span class="material-symbols-outlined text-outline text-[18px]">more_horiz</span>
       </div>
       <h3 class="font-display text-headline-sm mb-sm">${escHtml(title)}</h3>
-      <p class="font-body text-body-sm text-on-surface-variant leading-relaxed mb-md" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${escHtml(summary || 'Research synthesis generated from your source.')}</p>
-      <div class="flex gap-xs flex-wrap">${previewTags}</div>`;
+      <p class="font-body text-body-md text-on-surface-variant leading-relaxed mb-md" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${escHtml(summary || 'Research synthesis generated from your source.')}</p>
+      <div class="flex gap-xs flex-wrap mb-md">${previewTags}</div>
+      ${nodeCount ? `<div class="flex items-center gap-xs pt-sm border-t border-outline-variant/10">
+        <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1">auto_awesome</span>
+        <span class="font-mono text-[10px] text-on-surface-variant">${nodeCount} insight${nodeCount !== 1 ? 's' : ''} generated</span>
+      </div>` : ''}`;
     world.appendChild(card);
     panToCard(wx, wy);
   }
@@ -1127,8 +1145,8 @@
     const userEl = document.createElement('div');
     userEl.className = 'flex flex-col gap-xs items-end';
     userEl.innerHTML = `
-      <div class="bg-surface-container-high p-md rounded-xl rounded-tr-sm max-w-[90%] shadow-paper border border-outline-variant/10">
-        <p class="font-body text-body-sm text-on-surface">${escHtml(text)}</p>
+      <div class="bg-[#E8E3DC] p-md rounded-xl rounded-tr-none max-w-[90%] shadow-paper border border-outline-variant/10">
+        <p class="font-body text-body-md text-on-surface">${escHtml(text)}</p>
       </div>
       <span class="font-mono text-[10px] text-outline px-xs uppercase tracking-tighter">Researcher</span>`;
     msgs.appendChild(userEl);
