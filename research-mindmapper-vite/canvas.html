@@ -152,15 +152,6 @@
       </button>
     </div>
 
-    <!-- Query / URL input -->
-    <div class="mt-md flex items-center bg-surface-container-lowest border border-outline-variant/40 rounded-xl h-10 px-sm focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/10 transition-all">
-      <span id="input-icon" class="material-symbols-outlined text-outline text-[16px] mr-xs shrink-0">search</span>
-      <input id="url-input" class="bg-transparent border-none focus:ring-0 text-body-sm font-mono text-on-surface placeholder:text-outline w-full p-0 outline-none" placeholder="URL or research topic…" type="text" />
-    </div>
-    <button id="import-btn" class="w-full mt-sm bg-primary hover:bg-[#8f2d1f] text-on-primary font-body text-btn py-sm rounded-xl transition-all flex items-center justify-center gap-xs h-10 shadow-paper hover:shadow-floating active:scale-95">
-      <span class="material-symbols-outlined text-[16px]">auto_awesome</span>
-      Research
-    </button>
   </div>
 
   <!-- Filter pills -->
@@ -456,32 +447,29 @@
 
   </div>
 
-  <!-- Chat input -->
+  <!-- Unified command bar -->
   <div class="flex-none p-lg bg-surface/40 backdrop-blur-sm border-t border-outline-variant/10">
     <div class="relative">
       <textarea id="chat-input"
-        class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-md py-md pr-14 focus:ring-2 focus:ring-primary focus:border-transparent font-body text-body-sm resize-none shadow-paper placeholder:text-outline outline-none"
-        placeholder="Ask about your canvas…" rows="1"></textarea>
+        class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-md py-[14px] pr-14 focus:ring-2 focus:ring-primary focus:border-transparent font-body text-body-sm resize-none shadow-paper placeholder:text-outline outline-none"
+        placeholder="Paste a URL, research a topic, or ask a question…" rows="2"></textarea>
       <button id="chat-send"
-        class="absolute right-xs top-1/2 -translate-y-1/2 bg-primary text-on-primary w-10 h-10 rounded-lg flex items-center justify-center shadow-paper hover:shadow-floating transition-all active:scale-95 group">
-        <span class="material-symbols-outlined group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+        class="absolute right-xs bottom-xs bg-primary text-on-primary w-10 h-10 rounded-lg flex items-center justify-center shadow-paper hover:shadow-floating transition-all active:scale-95 group">
+        <span id="chat-send-icon" class="material-symbols-outlined group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
       </button>
     </div>
-    <div class="flex justify-between items-center mt-md">
-      <div class="flex gap-md">
-        <button class="text-on-surface-variant/60 hover:text-primary transition-colors">
+    <!-- Mode hint -->
+    <div class="flex items-center justify-between mt-sm">
+      <span id="input-mode-hint" class="font-mono text-[10px] text-outline flex items-center gap-xs">
+        <span class="material-symbols-outlined text-[12px]">info</span>
+        URL or topic → research · question → ask AI
+      </span>
+      <div class="flex gap-sm">
+        <button class="text-on-surface-variant/60 hover:text-primary transition-colors" title="Attach file">
           <span class="material-symbols-outlined text-[18px]">attach_file</span>
         </button>
-        <button class="text-on-surface-variant/60 hover:text-primary transition-colors">
+        <button class="text-on-surface-variant/60 hover:text-primary transition-colors" title="Voice input">
           <span class="material-symbols-outlined text-[18px]">mic</span>
-        </button>
-      </div>
-      <div class="flex gap-sm">
-        <button class="text-on-surface-variant hover:bg-surface-container-high p-xs rounded transition-all">
-          <span class="material-symbols-outlined text-[18px]">settings</span>
-        </button>
-        <button class="text-on-surface-variant hover:bg-surface-container-high p-xs rounded transition-all">
-          <span class="material-symbols-outlined text-[18px]">help</span>
         </button>
       </div>
     </div>
@@ -892,194 +880,31 @@
     if (badge) badge.textContent = `Context: ${count} Card${count !== 1 ? 's' : ''}`;
   }
 
-  /* ── Import Source ─────────────────────────────── */
+  /* ── URL detector ─────────────────────────────── */
   function isUrl(s) {
     return /^https?:\/\//i.test(s) || /^(www\.)?[\w-]+\.[a-z]{2,}(\/|$)/i.test(s);
   }
 
-  async function importSource() {
-    const input = document.getElementById('url-input');
-    const btn   = document.getElementById('import-btn');
-    const rawInput = input.value.trim();
-
-    /* Wait for Clerk, then gate on sign-in */
-    const signedIn = await ensureSignedIn();
-    if (!signedIn) {
-      const msgs = document.getElementById('chat-messages');
-      const el = document.createElement('div');
-      el.className = 'flex flex-col gap-sm';
-      el.innerHTML = `
-        <div class="flex items-center gap-xs">
-          <span class="material-symbols-outlined text-outline text-sm">lock</span>
-          <span class="font-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">Sign in required</span>
-        </div>
-        <div class="font-body text-body-sm text-on-surface-variant leading-relaxed">
-          Please <a href="/" class="text-primary underline font-semibold">sign in on the classic app</a> first, then return to Canvas.
-        </div>`;
-      msgs.appendChild(el);
-      msgs.scrollTop = msgs.scrollHeight;
-      showChatPanel();
-      return;
-    }
-
-    if (!rawInput) {
-      input.style.outline = '2px solid #a63425';
-      input.style.outlineOffset = '2px';
-      setTimeout(() => { input.style.outline = ''; input.style.outlineOffset = ''; }, 1200);
-      return;
-    }
-
-    const setStatus = msg => {
-      btn.innerHTML = `<span class="material-symbols-outlined text-[16px]" style="animation:spin 0.8s linear infinite">progress_activity</span> ${msg}`;
-      btn.disabled = true;
-    };
-    const resetBtn = () => {
-      btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">auto_awesome</span> Research';
-      btn.disabled = false;
-    };
-
-    const urlMode = isUrl(rawInput);
-
-    try {
-      let sessionId, sessionTitle, summary, nodes;
-
-      if (urlMode) {
-        /* ── URL / YouTube import flow ─────────────────── */
-        const url = rawInput.startsWith('http') ? rawInput : 'https://' + rawInput;
-        let domain = rawInput;
-        try { domain = new URL(url).hostname.replace('www.',''); } catch {}
-
-        setStatus('Importing…');
-
-        const source = await requestJson('/api/sources', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url, topic: domain }),
-        });
-
-        if (source.status === 'pending' && source.job_id) {
-          setStatus('Transcribing…');
-          const job = await pollJob(source.job_id, msg => setStatus(msg));
-          if (job.status === 'failed' || !job.chunks_count) {
-            throw new Error(job.error || job.warnings?.[0] || 'Could not extract transcript.');
-          }
-        }
-
-        setStatus('Synthesizing…');
-        const result = await requestJson(`/api/sessions/${source.session_id}/generate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ topic: domain, depth: 'Basic', output: 'Mindmap' }),
-        });
-
-        sessionId    = source.session_id;
-        sessionTitle = result.topic || result.root || domain;
-        summary      = result.summary || '';
-        nodes        = result.nodes   || [];
-
-        sessions[sessionId] = {
-          title: sessionTitle, domain,
-          summary, nodes,
-          sources: [...(result.sources || []), ...(result.citations || [])],
-        };
-
-        /* Add sidebar card */
-        const isYT = /youtu/.test(url);
-        const list = document.getElementById('source-list');
-        const sideCard = document.createElement('div');
-        sideCard.dataset.sourceType = isYT ? 'video' : 'web';
-        sideCard.className = 'group flex items-center gap-md p-md bg-surface-container-lowest rounded-xl border border-primary/30 cursor-pointer hover:shadow-paper transition-all h-[72px] shrink-0';
-        sideCard.addEventListener('click', () => openReader(sessionTitle, domain, sessionId));
-        sideCard.innerHTML = `
-          <div class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings:'FILL' 1">${isYT ? 'play_circle' : 'public'}</span>
-          </div>
-          <div class="flex-1 min-w-0">
-            <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">${escHtml(sessionTitle)}</h4>
-            <span class="font-mono text-label-mono text-outline truncate uppercase block mt-[2px]">${escHtml(domain)}</span>
-          </div>
-          <span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity shrink-0">open_in_new</span>`;
-        list.insertBefore(sideCard, list.firstChild);
-        const total = list.querySelectorAll('[data-source-type]').length;
-        document.getElementById('inbox-footer').innerHTML =
-          `<span class="material-symbols-outlined text-[13px]">inbox</span> ${total} source${total !== 1 ? 's' : ''}`;
-
-      } else {
-        /* ── Topic / text query research flow ─────────── */
-        setStatus('Researching…');
-        const result = await requestJson('/api/research', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: rawInput, depth: 'Basic', output: 'Mindmap', source: 'Web' }),
-        });
-
-        sessionId    = result.session_id;
-        sessionTitle = result.topic || result.root || rawInput;
-        summary      = result.summary || '';
-        nodes        = result.nodes   || [];
-
-        sessions[sessionId] = {
-          title: sessionTitle, domain: rawInput,
-          summary, nodes,
-          sources: [...(result.sources || []), ...(result.citations || [])],
-        };
-
-        /* Add sidebar card for topic research */
-        const list = document.getElementById('source-list');
-        const sideCard = document.createElement('div');
-        sideCard.dataset.sourceType = 'web';
-        sideCard.className = 'group flex items-center gap-md p-md bg-surface-container-lowest rounded-xl border border-secondary/30 cursor-pointer hover:shadow-paper transition-all h-[72px] shrink-0';
-        sideCard.addEventListener('click', () => openReader(sessionTitle, rawInput, sessionId));
-        sideCard.innerHTML = `
-          <div class="w-9 h-9 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings:'FILL' 1">auto_awesome</span>
-          </div>
-          <div class="flex-1 min-w-0">
-            <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">${escHtml(sessionTitle)}</h4>
-            <span class="font-mono text-label-mono text-outline truncate uppercase block mt-[2px]">AI Research</span>
-          </div>
-          <span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity shrink-0">open_in_new</span>`;
-        list.insertBefore(sideCard, list.firstChild);
-        const total = list.querySelectorAll('[data-source-type]').length;
-        document.getElementById('inbox-footer').innerHTML =
-          `<span class="material-symbols-outlined text-[13px]">inbox</span> ${total} source${total !== 1 ? 's' : ''}`;
-      }
-
-      currentSessionId = sessionId;
-      updateContextBadge();
-
-      /* Add canvas card and pan to it */
-      addCanvasCard(sessionId, sessionTitle, summary, nodes);
-
-      input.value = '';
-      btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">check_circle</span> Done!';
-      setTimeout(resetBtn, 1800);
-
-    } catch (err) {
-      btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">error</span> Failed';
-      setTimeout(resetBtn, 2000);
-      /* Show error in chat */
-      const msgs = document.getElementById('chat-messages');
-      const errEl = document.createElement('div');
-      errEl.className = 'flex flex-col gap-sm';
-      errEl.innerHTML = `
-        <div class="flex items-center gap-xs">
-          <span class="material-symbols-outlined text-[#ba1a1a] text-sm">error</span>
-          <span class="font-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">Research Error</span>
-        </div>
-        <div class="font-body text-body-sm text-[#ba1a1a] leading-relaxed">${escHtml(err.message)}</div>`;
-      msgs.appendChild(errEl);
-      msgs.scrollTop = msgs.scrollHeight;
-      showChatPanel();
-    }
+  /* ── Add source card to left sidebar ─────────── */
+  function addSidebarCard(title, meta, sessionId, type, icon, iconColor, iconBg) {
+    const list = document.getElementById('source-list');
+    const card = document.createElement('div');
+    card.dataset.sourceType = type;
+    card.className = 'group flex items-center gap-sm p-sm bg-surface-container-high/60 rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:bg-surface-container-highest transition-all h-[80px] shrink-0 shadow-paper';
+    card.addEventListener('click', () => openReader(title, meta, sessionId));
+    card.innerHTML = `
+      <div class="w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined ${iconColor} text-[22px]" style="font-variation-settings:'FILL' 1">${icon}</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">${escHtml(title)}</h4>
+        <p class="font-mono text-[10px] text-outline truncate uppercase mt-[3px]">${escHtml(meta)}</p>
+      </div>`;
+    list.insertBefore(card, list.firstChild);
+    const total = list.querySelectorAll('[data-source-type]').length;
+    document.getElementById('inbox-footer').innerHTML =
+      `<span class="material-symbols-outlined text-[13px]">inbox</span> ${total} source${total !== 1 ? 's' : ''}`;
   }
-
-  document.getElementById('import-btn').addEventListener('click', importSource);
-  document.getElementById('url-input').addEventListener('keydown', e => { if (e.key === 'Enter') importSource(); });
-  document.getElementById('url-input').addEventListener('input', e => {
-    const icon = document.getElementById('input-icon');
-    if (icon) icon.textContent = isUrl(e.target.value.trim()) ? 'link' : 'search';
-  });
 
   /* ── Add AI research card to canvas ───────────── */
   let canvasCardOffset = 0;
@@ -1135,13 +960,151 @@
   ];
   let aiMsgIdx = 0;
 
+  /* ── Unified command bar routing ─────────────── */
+  function updateInputMode(val) {
+    const hint = document.getElementById('input-mode-hint');
+    const icon = document.getElementById('chat-send-icon');
+    if (!hint || !icon) return;
+    if (!val.trim()) {
+      hint.innerHTML = '<span class="material-symbols-outlined text-[12px]">info</span> URL or topic → research · question → ask AI';
+      icon.textContent = 'arrow_forward';
+    } else if (isUrl(val.trim())) {
+      hint.innerHTML = '<span class="material-symbols-outlined text-[12px]">link</span> Will import & research this URL';
+      icon.textContent = 'download';
+    } else if (!currentSessionId) {
+      hint.innerHTML = '<span class="material-symbols-outlined text-[12px]">auto_awesome</span> Will research this topic on the web';
+      icon.textContent = 'travel_explore';
+    } else {
+      hint.innerHTML = '<span class="material-symbols-outlined text-[12px]">psychology</span> Will ask AI about your canvas';
+      icon.textContent = 'arrow_forward';
+    }
+  }
+
   async function sendChat() {
     const input = document.getElementById('chat-input');
     const msgs  = document.getElementById('chat-messages');
     const text  = input.value.trim();
     if (!text) return;
 
-    /* User bubble */
+    /* ── Research mode: URL or topic with no active session ── */
+    if (isUrl(text) || !currentSessionId) {
+      /* Show user bubble */
+      const userEl = document.createElement('div');
+      userEl.className = 'flex flex-col gap-xs items-end';
+      userEl.innerHTML = `
+        <div class="bg-[#E8E3DC] p-md rounded-xl rounded-tr-none max-w-[90%] shadow-paper border border-outline-variant/10">
+          <p class="font-body text-body-md text-on-surface">${escHtml(text)}</p>
+        </div>
+        <span class="font-mono text-[10px] text-outline px-xs uppercase tracking-tighter">Researcher</span>`;
+      msgs.appendChild(userEl);
+      input.value = '';
+      updateInputMode('');
+      msgs.scrollTop = msgs.scrollHeight;
+
+      /* Status typing bubble */
+      const statusEl = makeTypingEl();
+      msgs.appendChild(statusEl);
+      msgs.scrollTop = msgs.scrollHeight;
+
+      const setStatus = msg => {
+        statusEl.innerHTML = `
+          <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1">psychology</span>
+          <span class="font-mono text-[10px] text-on-surface-variant">${escHtml(msg)}</span>`;
+      };
+
+      try {
+        /* Gate on sign-in */
+        const signedIn = await ensureSignedIn();
+        if (!signedIn) {
+          statusEl.remove();
+          msgs.appendChild(makeAiMsgEl(
+            '🔒 Please <a href="/" class="text-primary underline font-semibold">sign in on the classic app</a> first, then return to Canvas.'
+          ));
+          msgs.scrollTop = msgs.scrollHeight;
+          return;
+        }
+
+        let sessionId, sessionTitle, summary, nodes;
+
+        if (isUrl(text)) {
+          const url = text.startsWith('http') ? text : 'https://' + text;
+          let domain = text;
+          try { domain = new URL(url).hostname.replace('www.', ''); } catch {}
+
+          setStatus('Importing source…');
+          const source = await requestJson('/api/sources', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url, topic: domain }),
+          });
+
+          if (source.status === 'pending' && source.job_id) {
+            setStatus('Transcribing…');
+            const job = await pollJob(source.job_id, msg => setStatus(msg));
+            if (job.status === 'failed' || !job.chunks_count)
+              throw new Error(job.error || job.warnings?.[0] || 'Could not extract transcript.');
+          }
+
+          setStatus('Synthesizing…');
+          const result = await requestJson(`/api/sessions/${source.session_id}/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic: domain, depth: 'Basic', output: 'Mindmap' }),
+          });
+
+          sessionId    = source.session_id;
+          sessionTitle = result.topic || result.root || domain;
+          summary      = result.summary || '';
+          nodes        = result.nodes   || [];
+          sessions[sessionId] = { title: sessionTitle, domain, summary, nodes,
+            sources: [...(result.sources || []), ...(result.citations || [])] };
+
+          /* Sidebar card */
+          const isYT = /youtu/.test(url);
+          addSidebarCard(sessionTitle, domain, sessionId, isYT ? 'video' : 'web', isYT ? 'play_circle' : 'public', 'text-primary', 'bg-primary/10');
+
+        } else {
+          setStatus('Researching on the web…');
+          const result = await requestJson('/api/research', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: text, depth: 'Basic', output: 'Mindmap', source: 'Web' }),
+          });
+
+          sessionId    = result.session_id;
+          sessionTitle = result.topic || result.root || text;
+          summary      = result.summary || '';
+          nodes        = result.nodes   || [];
+          sessions[sessionId] = { title: sessionTitle, domain: text, summary, nodes,
+            sources: [...(result.sources || []), ...(result.citations || [])] };
+
+          /* Sidebar card */
+          addSidebarCard(sessionTitle, 'AI Research', sessionId, 'web', 'auto_awesome', 'text-secondary', 'bg-secondary/10');
+        }
+
+        currentSessionId = sessionId;
+        updateContextBadge();
+        addCanvasCard(sessionId, sessionTitle, summary, nodes);
+        statusEl.remove();
+
+        /* Success message in chat */
+        const nodeCount = (nodes || []).length;
+        msgs.appendChild(makeAiMsgEl(
+          `Research complete on <b>${escHtml(sessionTitle)}</b>. I found ${nodeCount} insight${nodeCount !== 1 ? 's' : ''} and added a card to your canvas.` +
+          `<div class="mt-md p-md bg-white/40 border-l-4 border-secondary rounded-r-lg">` +
+          `<p class="font-body text-body-sm italic text-on-surface">${escHtml((summary || '').slice(0, 200))}${summary && summary.length > 200 ? '…' : ''}</p></div>`
+        ));
+
+      } catch (err) {
+        statusEl.remove();
+        msgs.appendChild(makeAiMsgEl(`<span class="text-[#ba1a1a]">⚠ ${escHtml(err.message)}</span>`));
+      }
+
+      msgs.scrollTop = msgs.scrollHeight;
+      return;
+    }
+
+    /* ── Q&A mode: question with active session ── */
     const userEl = document.createElement('div');
     userEl.className = 'flex flex-col gap-xs items-end';
     userEl.innerHTML = `
@@ -1151,48 +1114,33 @@
       <span class="font-mono text-[10px] text-outline px-xs uppercase tracking-tighter">Researcher</span>`;
     msgs.appendChild(userEl);
     input.value = '';
+    updateInputMode('');
     msgs.scrollTop = msgs.scrollHeight;
 
     const typingEl = makeTypingEl();
     msgs.appendChild(typingEl);
     msgs.scrollTop = msgs.scrollHeight;
 
-    if (currentSessionId) {
-      /* Real backend Q&A */
-      try {
-        const data = await requestJson(`/api/sessions/${currentSessionId}/ask`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question: text }),
-        });
-        typingEl.remove();
-        let citationsHtml = '';
-        if (data.citations?.length) {
-          citationsHtml = `<div class="flex gap-xs flex-wrap mt-xs">` +
-            data.citations.slice(0, 3).map(c =>
-              c.url
-                ? `<a href="${escHtml(c.url)}" target="_blank" rel="noreferrer" class="px-sm py-xs bg-secondary/10 text-on-secondary-fixed-variant rounded text-[10px] font-mono hover:bg-secondary/20 transition-colors">${escHtml(c.title || 'Source')}</a>`
-                : `<span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">${escHtml(c.title || '')}</span>`
-            ).join('') + '</div>';
-        }
-        msgs.appendChild(makeAiMsgEl(escHtml(data.answer || 'No answer returned.'), citationsHtml));
-      } catch (err) {
-        typingEl.remove();
-        msgs.appendChild(makeAiMsgEl(
-          `<span class="text-[#ba1a1a]">⚠ ${escHtml(err.message)}</span>`
-        ));
+    try {
+      const data = await requestJson(`/api/sessions/${currentSessionId}/ask`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: text }),
+      });
+      typingEl.remove();
+      let citationsHtml = '';
+      if (data.citations?.length) {
+        citationsHtml = `<div class="flex gap-xs flex-wrap mt-xs">` +
+          data.citations.slice(0, 3).map(c =>
+            c.url
+              ? `<a href="${escHtml(c.url)}" target="_blank" rel="noreferrer" class="px-sm py-xs bg-secondary/10 text-on-secondary-fixed-variant rounded text-[10px] font-mono hover:bg-secondary/20 transition-colors">${escHtml(c.title || 'Source')}</a>`
+              : `<span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">${escHtml(c.title || '')}</span>`
+          ).join('') + '</div>';
       }
-    } else {
-      /* Fallback mock — nudge user to import */
-      setTimeout(() => {
-        typingEl.remove();
-        const response = FALLBACK_RESPONSES[aiMsgIdx % FALLBACK_RESPONSES.length];
-        aiMsgIdx++;
-        msgs.appendChild(makeAiMsgEl(
-          escHtml(response) +
-          `<br><br><em class="text-[11px] text-outline">Import a source above to get answers grounded in your actual research.</em>`
-        ));
-      }, 1100);
+      msgs.appendChild(makeAiMsgEl(escHtml(data.answer || 'No answer returned.'), citationsHtml));
+    } catch (err) {
+      typingEl.remove();
+      msgs.appendChild(makeAiMsgEl(`<span class="text-[#ba1a1a]">⚠ ${escHtml(err.message)}</span>`));
     }
     msgs.scrollTop = msgs.scrollHeight;
   }
@@ -1201,6 +1149,7 @@
   document.getElementById('chat-input').addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
   });
+  document.getElementById('chat-input').addEventListener('input', e => updateInputMode(e.target.value));
 
   /* ── Search ────────────────────────────────────── */
   function filterSources(query) {
