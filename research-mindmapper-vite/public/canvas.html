@@ -858,7 +858,7 @@
       },
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || data.message || `Request failed: ${res.status}`);
+    if (!res.ok) throw new Error(data.detail || data.message || `Request failed: ${res.status}${res.status === 401 ? ' (auth required)' : ''}`);
     return data;
   }
 
@@ -1013,17 +1013,6 @@
       };
 
       try {
-        /* Gate on sign-in */
-        const signedIn = await ensureSignedIn();
-        if (!signedIn) {
-          statusEl.remove();
-          msgs.appendChild(makeAiMsgEl(
-            '🔒 Please <a href="/" class="text-primary underline font-semibold">sign in on the classic app</a> first, then return to Canvas.'
-          ));
-          msgs.scrollTop = msgs.scrollHeight;
-          return;
-        }
-
         let sessionId, sessionTitle, summary, nodes;
 
         if (isUrl(text)) {
@@ -1097,7 +1086,12 @@
 
       } catch (err) {
         statusEl.remove();
-        msgs.appendChild(makeAiMsgEl(`<span class="text-[#ba1a1a]">⚠ ${escHtml(err.message)}</span>`));
+        const isAuth = /401|auth|sign.?in|unauthori/i.test(err.message);
+        msgs.appendChild(makeAiMsgEl(
+          isAuth
+            ? '🔒 You need to be signed in. <a href="/" class="text-primary underline font-semibold">Sign in on the classic app</a> then come back — your session will carry over.'
+            : `<span class="text-[#ba1a1a]">⚠ ${escHtml(err.message)}</span>`
+        ));
       }
 
       msgs.scrollTop = msgs.scrollHeight;
@@ -1140,7 +1134,12 @@
       msgs.appendChild(makeAiMsgEl(escHtml(data.answer || 'No answer returned.'), citationsHtml));
     } catch (err) {
       typingEl.remove();
-      msgs.appendChild(makeAiMsgEl(`<span class="text-[#ba1a1a]">⚠ ${escHtml(err.message)}</span>`));
+      const isAuth = /401|auth|sign.?in|unauthori/i.test(err.message);
+      msgs.appendChild(makeAiMsgEl(
+        isAuth
+          ? '🔒 Session expired. <a href="/" class="text-primary underline font-semibold">Sign in again</a> and return to Canvas.'
+          : `<span class="text-[#ba1a1a]">⚠ ${escHtml(err.message)}</span>`
+      ));
     }
     msgs.scrollTop = msgs.scrollHeight;
   }
