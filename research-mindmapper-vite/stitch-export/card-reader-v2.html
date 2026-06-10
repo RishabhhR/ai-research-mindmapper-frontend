@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aletheia Canvas | Card Reader</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;600;700&amp;family=Epilogue:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#dfbfba",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#cec5ba",
+                        "on-tertiary-fixed-variant": "#4b463e",
+                        "primary-fixed": "#ffdad4",
+                        "inverse-surface": "#32302e",
+                        "surface-bright": "#fef8f5",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#58413e",
+                        "surface-tint": "#a93627",
+                        "primary-fixed-dim": "#ffb4a8",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#ede7e4",
+                        "on-primary-fixed": "#410100",
+                        "on-surface": "#1d1b19",
+                        "surface-container-low": "#f8f2ef",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e7e1de",
+                        "surface": "#fef8f5",
+                        "surface-dim": "#ded9d6",
+                        "background": "#fef8f5",
+                        "on-primary-fixed-variant": "#881e12",
+                        "tertiary": "#615b52",
+                        "secondary": "#006d3e",
+                        "on-primary-container": "#fffbff",
+                        "inverse-primary": "#ffb4a8",
+                        "on-secondary-fixed-variant": "#00522d",
+                        "secondary-fixed-dim": "#7dd99e",
+                        "tertiary-fixed": "#eae1d5",
+                        "surface-variant": "#e7e1de",
+                        "secondary-container": "#96f3b6",
+                        "surface-container": "#f3ede9",
+                        "primary-container": "#c74c3a",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#007241",
+                        "on-secondary-fixed": "#00210f",
+                        "secondary-fixed": "#99f6b8",
+                        "error": "#ba1a1a",
+                        "outline": "#8c716d",
+                        "primary": "#a63425",
+                        "on-tertiary-fixed": "#1f1b14",
+                        "on-tertiary-container": "#fffbff",
+                        "inverse-on-surface": "#f5f0ec",
+                        "on-background": "#1d1b19",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#7a746a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "12px",
+                        "2xl": "24px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "card-gap": "20px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "canvas-margin": "32px",
+                        "md": "16px",
+                        "unit": "4px",
+                        "xl": "48px"
+                    },
+                    "boxShadow": {
+                        "paper": "0px 2px 4px rgba(42, 40, 38, 0.05), 0px 1px 2px rgba(42, 40, 38, 0.1)",
+                        "floating": "0px 12px 32px rgba(42, 40, 38, 0.12), 0px 4px 8px rgba(42, 40, 38, 0.06)"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Fraunces"],
+                        "body-lg": ["Epilogue"],
+                        "label-mono": ["JetBrains Mono"],
+                        "body-sm": ["Epilogue"],
+                        "display-lg": ["Fraunces"],
+                        "body-md": ["Epilogue"],
+                        "headline-sm": ["Fraunces"],
+                        "button": ["Epilogue"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "button": ["15px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+.paper-texture {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuD-h0nevMywRxgKV-F2xXIhWknT_YZE5gxLYq9uhMaKmuL0cgDpUwuoNGY0nDibckJDks_vP4xTxBQ1UnYUm6eDV0lpy-QLRMOtR3SFz3eX8k2H-Sl3lABPuOsrl1NnCZeBS0auJ41BzSl5zbF-NcFCZdok7E7wR70EIb0KGyVgt3Gxq9SxtQl4-tZ1FHoCJXUrUs1r0wHVCKfHehZfFwcz7rYOYY5OAqN3-qZ41y78LN9-HTARiT9xbHJXTR1LuwM4Ux4GtuW2hxo)
+    }
+.dashed-thread {
+    background-image: repeating-linear-gradient(to right, #8c716d 0, #8c716d 4px, transparent 4px, transparent 8px);
+    height: 2px;
+    width: 100%
+    }</style>
+</head>
+<body class="bg-surface font-body-md text-on-surface paper-texture min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-lg py-sm bg-surface/90 dark:bg-surface-dim/90 backdrop-blur-md border-b border-outline-variant/20 shadow-floating">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Aletheia Canvas</span>
+</div>
+<nav class="hidden md:flex gap-lg">
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">Workspace</a>
+<a class="font-body-md text-body-md text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary" href="#">Threads</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">Library</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">Timeline</a>
+</nav>
+<div class="flex items-center gap-md">
+<div class="bg-surface-container-high px-md py-xs rounded-full flex items-center gap-xs">
+<span class="material-symbols-outlined text-outline">search</span>
+<span class="text-label-mono font-label-mono text-outline">Search resources...</span>
+</div>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-lg font-button text-button shadow-paper hover:shadow-floating transition-all active:scale-95">Share</button>
+</div>
+</header>
+<!-- Side Navigation Bars -->
+<aside class="fixed left-0 top-0 h-full flex flex-col pt-24 pb-8 z-40 bg-surface-container-low dark:bg-surface-dim border-r border-outline-variant/30 shadow-paper w-[300px] rounded-r-xl">
+<div class="px-lg mb-lg">
+<h2 class="font-headline-sm text-headline-sm text-primary">Sources</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Active Workspace</p>
+</div>
+<div class="flex-1 px-sm space-y-xs">
+<div class="flex items-center gap-md px-md py-sm bg-primary-container text-on-primary-container rounded-lg font-bold transition-all translate-x-1">
+<span class="material-symbols-outlined">book_5</span>
+<span class="font-label-mono text-label-mono">Sources</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all">
+<span class="material-symbols-outlined">database</span>
+<span class="font-label-mono text-label-mono">Library</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-mono text-label-mono">Recent</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all">
+<span class="material-symbols-outlined">grade</span>
+<span class="font-label-mono text-label-mono">Starred</span>
+</div>
+</div>
+<div class="px-lg mt-auto">
+<button class="w-full bg-outline-variant/20 border border-outline-variant text-on-surface-variant py-sm rounded-lg font-button text-button hover:bg-outline-variant/30 transition-colors">Import File</button>
+</div>
+</aside>
+<aside class="fixed right-0 top-0 h-full flex flex-col pt-24 pb-8 z-40 bg-surface-container-low dark:bg-surface-dim border-l border-outline-variant/30 shadow-paper w-[360px] rounded-l-xl">
+<div class="px-lg mb-lg">
+<h2 class="font-headline-sm text-headline-sm text-secondary">Synthesis</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">AI Assistant</p>
+</div>
+<div class="flex-1 px-sm space-y-xs">
+<div class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all">
+<span class="material-symbols-outlined">psychology</span>
+<span class="font-label-mono text-label-mono">AI Synthesis</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg transition-all scale-98">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="font-label-mono text-label-mono">Notes</span>
+</div>
+</div>
+<div class="px-sm space-y-xs border-t border-outline-variant/20 pt-lg">
+<div class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-mono text-label-mono">Settings</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-mono text-label-mono">Help</span>
+</div>
+</div>
+</aside>
+<!-- Main Canvas Context (Blurred Background Content) -->
+<main class="ml-[300px] mr-[360px] mt-24 p-canvas-margin flex flex-wrap gap-card-gap justify-center opacity-40 select-none pointer-events-none">
+<!-- Background Cards to simulate the canvas -->
+<div class="bg-surface-container lowest w-80 h-96 p-lg rounded-xl shadow-paper border border-outline-variant/20 flex flex-col gap-md">
+<div class="h-4 w-24 bg-tertiary-fixed rounded"></div>
+<div class="h-8 w-full bg-surface-container-highest rounded"></div>
+<div class="flex-1 space-y-xs">
+<div class="h-3 w-full bg-surface-container-high rounded"></div>
+<div class="h-3 w-full bg-surface-container-high rounded"></div>
+<div class="h-3 w-3/4 bg-surface-container-high rounded"></div>
+</div>
+</div>
+<div class="bg-surface-container lowest w-80 h-96 p-lg rounded-xl shadow-paper border border-outline-variant/20 flex flex-col gap-md translate-y-12">
+<div class="h-4 w-24 bg-tertiary-fixed rounded"></div>
+<div class="h-8 w-full bg-surface-container-highest rounded"></div>
+<div class="flex-1 space-y-xs">
+<div class="h-3 w-full bg-surface-container-high rounded"></div>
+<div class="h-3 w-5/6 bg-surface-container-high rounded"></div>
+</div>
+</div>
+</main>
+<!-- IMMERSIVE MODAL OVERLAY: Card Reader -->
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-xl backdrop-blur-md bg-surface-container-low/80">
+<!-- Reader Container -->
+<article class="relative w-full max-w-[800px] h-[870px] bg-[#FCFBF8] rounded-2xl shadow-floating overflow-hidden flex flex-col border border-outline-variant/10">
+<!-- Close Action -->
+<button class="absolute top-lg right-lg text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[32px]">close</span>
+</button>
+<!-- Reader Header -->
+<header class="pt-xl px-xl pb-lg border-b border-outline-variant/20">
+<div class="flex items-center gap-sm mb-sm">
+<span class="bg-secondary-container/30 text-on-secondary-fixed-variant px-sm py-xs rounded font-label-mono text-label-mono">ARCHIVE REF: 042-X</span>
+<span class="text-outline font-label-mono text-label-mono">·</span>
+<time class="text-outline font-label-mono text-label-mono">OCTOBER 14, 1972</time>
+</div>
+<h1 class="font-headline-md text-headline-md text-on-surface tracking-tight max-w-[90%]">The Phenomenon of Kinetic Resonance in Vaporized Graphite Structures</h1>
+<div class="mt-md flex items-center gap-md">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-mono text-label-mono text-tertiary">Dr. Alistair Thorne</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm">label</span>
+<span class="font-label-mono text-label-mono text-tertiary">Materials Science, Quantum Echoes</span>
+</div>
+</div>
+</header>
+<!-- Reader Content -->
+<div class="flex-1 overflow-y-auto px-xl py-xl scroll-smooth relative">
+<!-- Floating Highlight Toolbar -->
+<div class="absolute top-[420px] left-[200px] z-[110] bg-surface-container-lowest border border-outline-variant shadow-floating rounded-full px-md py-sm flex items-center gap-md animate-in fade-in slide-in-from-bottom-4 duration-300">
+<button class="text-primary hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">stylus_note</span>
+</button>
+<div class="w-[1px] h-4 bg-outline-variant"></div>
+<button class="text-secondary hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">chat_bubble</span>
+</button>
+<div class="w-[1px] h-4 bg-outline-variant"></div>
+<button class="text-on-surface-variant hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">share</span>
+</button>
+<div class="w-[1px] h-4 bg-outline-variant"></div>
+<div class="flex gap-xs">
+<div class="w-4 h-4 rounded-full bg-primary-container cursor-pointer border border-white"></div>
+<div class="w-4 h-4 rounded-full bg-secondary-container cursor-pointer border border-white"></div>
+<div class="w-4 h-4 rounded-full bg-tertiary-container cursor-pointer border border-white"></div>
+</div>
+</div>
+<div class="max-w-[640px] mx-auto space-y-lg">
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-[1.8] first-letter:text-5xl first-letter:font-headline-md first-letter:text-primary first-letter:mr-2 first-letter:float-left">
+                        It has long been theorized that the internal vibrations of graphite, when subjected to intense localized heat within a vacuum, exhibit a behavior similar to auditory resonance. Our recent experiments at the Thorne Laboratory suggest that these "echoes" are not merely secondary thermal effects, but are in fact structural manifestations of quantum data being stored within the carbon lattice.
+                    </p>
+<div class="my-xl flex flex-col items-center gap-sm">
+<img alt="Microscopic view of graphite lattice" class="rounded-xl shadow-paper border border-outline-variant/30 grayscale hover:grayscale-0 transition-all duration-700 w-full object-cover h-64" data-alt="A highly detailed microscopic photograph of an intricate carbon graphite lattice structure. The lighting is high-contrast, with sharp highlights catching the geometric edges of the molecular bonds, creating a deep sense of scientific inquiry. The overall aesthetic is monochromatic and tactical, reflecting a mid-century laboratory atmosphere with subtle warm oatmeal undertones in the shadows. The mood is one of profound discovery and intellectual depth." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJihUjRc6Pw3EVHn9GuiplPS43Nl77bYfILnh7D-WB3Oy9rw3rhId95ZCS8HZISs6ux3mOKXx5kRRf9ecLLYCl7TXNxuDsuRgjGenEh6YdFbsHzyeUWQhjQ46BjP33GjIHwvLmq4EbUs5O57JCB3BISjWKW_0oYj5bOnBRiQm64H44URbDT-5mF6ghHACC9UwLKC2EeJSVZIWLs8yug0jipOWof88lAY41RNJ0qXSLk_VO-5rg_Xs4dAZQ5PRQY23nYqYtC37fBHk"/>
+<span class="font-label-mono text-[10px] text-outline uppercase tracking-widest">FIG 1.2: LATTICE DEFORMATION UNDER THERMAL STRESS</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-[1.8]">
+                        Upon the introduction of a secondary stimulus—specifically a low-frequency electromagnetic pulse—the lattice entered a state of sustained oscillation. <span class="bg-primary-fixed text-on-primary-fixed px-1 rounded-sm">This state, which we have termed "Kinetic Resonance," persisted for several minutes after the pulse was terminated,</span> indicating a potential for mechanical memory that exceeds our current computational models.
+                    </p>
+<div class="p-lg bg-surface-container-low rounded-xl border-l-4 border-primary shadow-paper my-xl">
+<p class="font-body-md italic text-on-surface">"The data isn't just recorded; it is physically inscribed into the dance of the atoms themselves. We aren't looking at a hard drive; we are looking at a performance."</p>
+<div class="mt-md text-right font-label-mono text-label-mono text-primary">— Journal Entry, Log 882</div>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-[1.8]">
+                        The implications for archival storage are staggering. If we can harness these oscillations, we might be able to create a medium that is immune to electromagnetic decay. The challenge remains the extraction: how do we translate the silent humming of a graphite block back into coherent human language? The vellum of the future may very well be made of smoke and stone.
+                    </p>
+<div class="h-24"></div>
+</div>
+</div>
+<!-- Reader Footer / Progress -->
+<footer class="h-16 px-xl bg-surface-container border-t border-outline-variant/20 flex items-center justify-between">
+<div class="flex items-center gap-md">
+<button class="text-outline hover:text-primary transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined">arrow_back</span>
+<span class="font-button text-button">Previous Card</span>
+</button>
+<div class="h-4 w-[1px] bg-outline-variant"></div>
+<button class="text-outline hover:text-primary transition-colors flex items-center gap-xs">
+<span class="font-button text-button">Next Card</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<div class="flex items-center gap-lg">
+<div class="flex items-center gap-sm">
+<div class="w-32 h-1 bg-outline-variant/30 rounded-full relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full w-2/3 bg-primary rounded-full"></div>
+</div>
+<span class="font-label-mono text-[10px] text-outline uppercase">65% READ</span>
+</div>
+<button class="bg-primary-container text-on-primary-container px-md py-xs rounded-full font-label-mono text-label-mono flex items-center gap-xs shadow-paper hover:shadow-floating transition-all">
+<span class="material-symbols-outlined text-sm">bookmark</span>
+                        Save to Research
+                    </button>
+</div>
+</footer>
+</article>
+</div>
+</body></html>

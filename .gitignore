@@ -6,3 +6,4 @@ download_screens.sh
 research-mindmapper-vite/node_modules/
 research-mindmapper-vite/dist/
 research-mindmapper-vite/.env
+research-mindmapper-vite/.claude/

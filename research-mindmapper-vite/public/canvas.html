@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Aletheia Canvas — Research Mindmapper</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@6/dist/clerk.browser.js" type="text/javascript"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Epilogue:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
   <script>
@@ -38,20 +38,11 @@
             "on-tertiary-fixed-variant": "#4b463e",
           },
           borderRadius: {
-            "DEFAULT": "0.25rem",
-            "lg": "0.5rem",
-            "xl": "0.75rem",
-            "2xl": "24px",
-            "full": "9999px",
+            "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "24px", "full": "9999px",
           },
           spacing: {
-            "xs": "4px",
-            "sm": "8px",
-            "md": "16px",
-            "lg": "24px",
-            "xl": "48px",
-            "card-gap": "20px",
-            "canvas-margin": "32px",
+            "xs": "4px", "sm": "8px", "md": "16px", "lg": "24px", "xl": "48px",
+            "card-gap": "20px", "canvas-margin": "32px",
           },
           fontFamily: {
             "display": ["Fraunces", "Georgia", "serif"],
@@ -76,378 +67,138 @@
     };
   </script>
   <style>
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    }
-    .canvas-bg {
-      background-image: radial-gradient(#dfbfba 0.5px, transparent 0.5px);
-      background-size: 24px 24px;
-    }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .canvas-bg { background-image: radial-gradient(#dfbfba 0.5px, transparent 0.5px); background-size: 24px 24px; }
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #dfbfba; border-radius: 10px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes bounce-dot {
-      0%, 80%, 100% { transform: translateY(0); }
-      40%            { transform: translateY(-5px); }
-    }
+    @keyframes bounce-dot { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-5px); } }
     .dot1 { animation: bounce-dot 1.2s infinite 0ms; }
     .dot2 { animation: bounce-dot 1.2s infinite 150ms; }
     .dot3 { animation: bounce-dot 1.2s infinite 300ms; }
-    .card-hover { transition: transform 0.18s ease, box-shadow 0.18s ease; }
-    .card-hover:hover { transform: translateY(-3px); box-shadow: 0px 12px 32px rgba(42,40,38,0.12), 0px 4px 8px rgba(42,40,38,0.06); }
-    .panel-transition { transition: width 0.25s cubic-bezier(0.4,0,0.2,1), opacity 0.2s; }
+    .card-hover { transition: box-shadow 0.18s ease; }
+    .card-hover:hover { box-shadow: 0px 12px 32px rgba(42,40,38,0.12), 0px 4px 8px rgba(42,40,38,0.06); }
+    .card-hover.dragging { box-shadow: 0px 16px 40px rgba(42,40,38,0.18); cursor: grabbing; opacity: .95; }
     #sidebar { transition: width 0.25s cubic-bezier(0.4,0,0.2,1), opacity 0.2s; }
     #chat-panel { transition: width 0.25s cubic-bezier(0.4,0,0.2,1), opacity 0.2s; }
     #canvas { transition: left 0.25s cubic-bezier(0.4,0,0.2,1), right 0.25s cubic-bezier(0.4,0,0.2,1); }
+    .sidebar-delete { opacity: 0; transition: opacity .15s ease; }
+    .sidebar-item:hover .sidebar-delete { opacity: 1; }
   </style>
 </head>
 <body class="h-screen w-screen overflow-hidden bg-background text-on-surface font-body select-none">
 
-<!-- ═══════════════════════════════════════════════
-     HEADER
-═══════════════════════════════════════════════ -->
+<!-- ═══════════ HEADER ═══════════ -->
 <header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-lg py-sm bg-surface/90 backdrop-blur-md border-b border-outline-variant/20 shadow-floating">
   <div class="flex items-center gap-md">
     <a href="/" class="flex items-center justify-center w-8 h-8 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-primary transition-all" title="Back to Classic">
       <span class="material-symbols-outlined text-[18px]">arrow_back</span>
     </a>
-    <span class="font-display text-headline-md font-bold text-primary leading-none">Aletheia Canvas</span>
-    <nav class="hidden md:flex ml-lg gap-lg">
-      <a class="text-primary font-semibold border-b-2 border-primary transition-colors duration-200 text-body-sm font-body pb-xs" href="#">Workspace</a>
-      <a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-body-sm font-body" href="#">Threads</a>
-      <a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-body-sm font-body" href="#">Library</a>
-      <a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-body-sm font-body" href="#">Timeline</a>
-    </nav>
+    <span class="font-display text-headline-sm font-bold text-primary leading-none">Aletheia Canvas</span>
+    <span class="px-sm py-[2px] bg-primary/10 text-primary rounded-full font-mono text-[10px] uppercase tracking-widest">Beta</span>
   </div>
   <div class="flex items-center gap-md">
-    <div class="relative">
+    <div class="relative hidden sm:block">
       <span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
-      <input class="pl-xl pr-md py-xs bg-surface-container-low border border-outline-variant/20 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-body-sm font-body w-52 placeholder:text-outline outline-none" placeholder="Search insights…" type="text" />
+      <input id="header-search" class="pl-xl pr-md py-xs bg-surface-container-low border border-outline-variant/20 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-body-sm font-body w-52 placeholder:text-outline outline-none" placeholder="Search your research…" type="text" />
     </div>
-    <button class="bg-primary text-on-primary px-lg py-xs rounded-full font-body text-btn shadow-paper hover:shadow-floating transition-all active:scale-95">Share</button>
+    <div id="auth-area" class="flex items-center gap-sm min-w-[40px] min-h-[32px]"></div>
   </div>
 </header>
 
-<!-- ═══════════════════════════════════════════════
-     SOURCE SIDEBAR (left)
-═══════════════════════════════════════════════ -->
+<!-- ═══════════ SOURCE SIDEBAR ═══════════ -->
 <aside id="sidebar"
   class="fixed left-0 top-0 h-full z-40 flex flex-col pt-14 bg-surface-container-low border-r border-outline-variant/30 shadow-paper w-[300px] overflow-hidden rounded-r-2xl">
 
-  <!-- Sidebar Header -->
   <div class="px-lg pt-lg pb-md border-b border-outline-variant/20 shrink-0">
     <div class="flex items-center justify-between mb-xs">
-      <div class="flex items-center gap-sm">
-        <div class="w-9 h-9 rounded-full bg-surface-dim border border-outline-variant flex items-center justify-center shrink-0">
-          <span class="font-mono text-[11px] font-bold text-on-surface-variant select-none">YOU</span>
-        </div>
-        <div>
-          <h2 class="font-display text-headline-sm text-primary leading-tight">Sources</h2>
-          <p class="font-body text-body-sm text-on-surface-variant opacity-70">Active Workspace</p>
-        </div>
+      <div>
+        <h2 class="font-display text-headline-sm text-primary leading-tight">Research</h2>
+        <p id="sidebar-subtitle" class="font-body text-body-sm text-on-surface-variant opacity-70">Your saved sessions</p>
       </div>
-      <button id="close-sidebar" class="w-8 h-8 rounded-lg flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container transition-all">
+      <button id="close-sidebar" class="w-8 h-8 rounded-lg flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container transition-all" title="Hide panel">
         <span class="material-symbols-outlined text-[18px]">chevron_left</span>
       </button>
     </div>
-
   </div>
 
-  <!-- Filter pills -->
-  <div class="px-lg py-sm shrink-0 flex gap-xs overflow-x-auto border-b border-outline-variant/10">
-    <button data-filter="all"  class="filter-pill px-md py-xs bg-on-surface text-surface rounded-full font-mono text-label-mono whitespace-nowrap transition-all">All</button>
-    <button data-filter="pdf"  class="filter-pill px-md py-xs bg-surface-container text-on-surface-variant rounded-full font-mono text-label-mono whitespace-nowrap hover:bg-surface-container-high transition-all">PDFs</button>
-    <button data-filter="web"  class="filter-pill px-md py-xs bg-surface-container text-on-surface-variant rounded-full font-mono text-label-mono whitespace-nowrap hover:bg-surface-container-high transition-all">Web</button>
-    <button data-filter="text" class="filter-pill px-md py-xs bg-surface-container text-on-surface-variant rounded-full font-mono text-label-mono whitespace-nowrap hover:bg-surface-container-high transition-all">Text</button>
-  </div>
-
-  <!-- Source list -->
   <div id="source-list" class="flex-1 overflow-y-auto px-md py-md flex flex-col gap-sm">
-
-    <div data-source-type="web"
-      class="group flex items-center gap-sm p-sm bg-surface-container-high/60 rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:bg-surface-container-highest transition-all h-[80px] shrink-0 shadow-paper"
-      onclick="openReader('Cognitive Load in UI Design','nngroup.com')">
-      <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-primary text-[22px]" style="font-variation-settings:'FILL' 1">article</span>
-      </div>
-      <div class="flex-1 min-w-0">
-        <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">Cognitive Load in UI Design</h4>
-        <p class="font-mono text-[10px] text-outline truncate uppercase mt-[3px]">nngroup.com · Web</p>
-      </div>
-    </div>
-
-    <div data-source-type="pdf"
-      class="group flex items-center gap-sm p-sm bg-surface-container-high/60 rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:bg-surface-container-highest transition-all h-[80px] shrink-0 shadow-paper border-primary/30 bg-primary/5"
-      onclick="openReader('Mental Models 2024','local file')">
-      <div class="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-primary text-[22px]" style="font-variation-settings:'FILL' 1">picture_as_pdf</span>
-      </div>
-      <div class="flex-1 min-w-0">
-        <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">Mental_Models_2024.pdf</h4>
-        <p class="font-mono text-[10px] text-primary truncate uppercase mt-[3px]">Active · 12 Highlights</p>
-      </div>
-    </div>
-
-    <div data-source-type="web"
-      class="group flex items-center gap-sm p-sm bg-surface-container-high/60 rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:bg-surface-container-highest transition-all h-[80px] shrink-0 shadow-paper"
-      onclick="openReader('The Evolution of Note-taking','medium.com')">
-      <div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-secondary text-[22px]" style="font-variation-settings:'FILL' 1">public</span>
-      </div>
-      <div class="flex-1 min-w-0">
-        <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">The Evolution of Note-taking</h4>
-        <p class="font-mono text-[10px] text-outline truncate uppercase mt-[3px]">medium.com · Added 5h ago</p>
-      </div>
-    </div>
-
-    <div data-source-type="text"
-      class="group flex items-center gap-sm p-sm bg-surface-container-high/60 rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:bg-surface-container-highest transition-all h-[80px] shrink-0 shadow-paper"
-      onclick="openReader('Meeting Notes — Synthesis','text snippet')">
-      <div class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-on-surface-variant text-[22px]" style="font-variation-settings:'FILL' 1">notes</span>
-      </div>
-      <div class="flex-1 min-w-0">
-        <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">Meeting Notes — Synthesis</h4>
-        <p class="font-mono text-[10px] text-outline truncate uppercase mt-[3px]">Text File · Added 10m ago</p>
-      </div>
-    </div>
-
+    <!-- populated from /api/sessions -->
   </div>
 
-  <!-- Sidebar footer -->
   <div class="px-md pt-sm pb-md border-t border-outline-variant/20 shrink-0">
-    <button class="w-full py-sm border border-dashed border-outline-variant rounded-xl font-mono text-label-mono text-outline hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-xs mb-sm">
+    <input id="file-input" type="file" accept=".txt,.pdf,text/plain,application/pdf" class="hidden" />
+    <button id="upload-btn" class="w-full py-sm border border-dashed border-outline-variant rounded-xl font-mono text-label-mono text-outline hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-xs mb-sm">
       <span class="material-symbols-outlined text-sm">add_circle</span>
-      Upload Local File
+      Upload TXT / PDF
     </button>
-    <div class="flex items-center justify-between">
-      <span id="inbox-footer" class="font-mono text-label-mono text-outline flex items-center gap-xs">
-        <span class="material-symbols-outlined text-[13px]">inbox</span>
-        4 sources
-      </span>
-      <div class="flex gap-xs">
-        <a class="p-xs text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#" title="Library">
-          <span class="material-symbols-outlined text-[16px]">database</span>
-        </a>
-        <a class="p-xs text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#" title="Recent">
-          <span class="material-symbols-outlined text-[16px]">history</span>
-        </a>
-        <a class="p-xs text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#" title="Starred">
-          <span class="material-symbols-outlined text-[16px]">grade</span>
-        </a>
-      </div>
-    </div>
+    <span id="inbox-footer" class="font-mono text-label-mono text-outline flex items-center gap-xs">
+      <span class="material-symbols-outlined text-[13px]">inbox</span>
+      0 sessions
+    </span>
   </div>
 </aside>
 
-<!-- ═══════════════════════════════════════════════
-     MAIN CANVAS
-═══════════════════════════════════════════════ -->
+<!-- ═══════════ MAIN CANVAS ═══════════ -->
 <main id="canvas"
   class="fixed top-14 bottom-0 canvas-bg cursor-grab active:cursor-grabbing overflow-hidden"
   style="left: 300px; right: 360px;">
 
-  <!-- Floating: show sidebar (visible when sidebar hidden) -->
   <button id="open-sidebar"
     class="hidden absolute top-4 left-4 z-20 items-center gap-xs h-9 px-md bg-surface/90 backdrop-blur rounded-full shadow-paper border border-outline-variant/20 text-body-sm font-body text-on-surface-variant hover:text-primary hover:bg-surface transition-all">
     <span class="material-symbols-outlined text-[16px]">menu</span>
-    Sources
+    Research
   </button>
 
-  <!-- Floating: show chat (visible when chat hidden) -->
   <button id="open-chat-btn"
     class="hidden absolute top-4 right-4 z-20 items-center gap-xs h-9 px-md bg-surface/90 backdrop-blur rounded-full shadow-paper border border-outline-variant/20 text-body-sm font-body text-on-surface-variant hover:text-primary hover:bg-surface transition-all">
     <span class="material-symbols-outlined text-[16px]">chat</span>
     AI
   </button>
 
-  <!-- Zoom controls (bottom right) -->
   <div class="absolute bottom-5 right-5 z-20">
     <div class="flex h-9 items-center bg-surface/90 backdrop-blur rounded-full shadow-paper border border-outline-variant/20 px-xs gap-[2px]">
-      <button onclick="zoom(-0.1)" class="w-8 h-7 flex items-center justify-center rounded-full text-outline hover:bg-surface-container transition-colors text-body-md font-bold">−</button>
+      <button id="zoom-out" class="w-8 h-7 flex items-center justify-center rounded-full text-outline hover:bg-surface-container transition-colors text-body-md font-bold">−</button>
       <span id="zoom-label" class="px-sm font-mono text-label-mono text-on-surface min-w-[3.5rem] text-center">100%</span>
-      <button onclick="zoom(0.1)" class="w-8 h-7 flex items-center justify-center rounded-full text-outline hover:bg-surface-container transition-colors text-body-md font-bold">+</button>
+      <button id="zoom-in" class="w-8 h-7 flex items-center justify-center rounded-full text-outline hover:bg-surface-container transition-colors text-body-md font-bold">+</button>
     </div>
   </div>
 
-  <!-- Canvas world -->
-  <div id="canvas-world" class="absolute inset-0" style="transform-origin: 0 0;">
-
-    <!-- SVG connections -->
-    <svg class="absolute inset-0 w-full h-full pointer-events-none" style="overflow:visible">
-      <path d="M 460 310 C 560 310, 520 400, 640 400"
-        fill="none" stroke="#8c716d" stroke-width="2" stroke-dasharray="8 4" opacity="0.4"/>
-      <path d="M 460 370 C 500 430, 500 500, 560 540"
-        fill="none" stroke="#006d3e" stroke-width="2" stroke-dasharray="8 4" opacity="0.3"/>
-    </svg>
-
-    <!-- Cluster halo -->
-    <div class="absolute rounded-full pointer-events-none"
-      style="left:500px;top:260px;width:580px;height:500px;background:rgba(166,52,37,0.03);filter:blur(48px);"></div>
-
-    <!-- Card 1 -->
-    <div class="card-hover absolute bg-surface rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-pointer hover:shadow-floating"
-      style="left:120px;top:180px;" onclick="openReader('Knowledge Graphs 101','towardsdatascience.com')">
-      <div class="flex justify-between items-start mb-md">
-        <span class="bg-primary/10 text-primary px-sm py-xs rounded font-mono text-label-mono uppercase tracking-widest text-[10px]">Primary Thesis</span>
-        <span class="material-symbols-outlined text-outline text-[18px]">more_horiz</span>
-      </div>
-      <h3 class="font-display text-headline-sm mb-sm">Knowledge Graphs 101</h3>
-      <p class="font-body text-body-md text-on-surface-variant leading-relaxed mb-md">
-        An introduction to structuring data with interconnected entities and relationships for better machine understanding.
+  <!-- Empty state -->
+  <div id="empty-state" class="hidden absolute inset-0 flex items-center justify-center pointer-events-none">
+    <div class="text-center max-w-[420px] px-lg">
+      <span class="material-symbols-outlined text-outline text-[56px] mb-md inline-block">scatter_plot</span>
+      <h3 class="font-display text-headline-sm text-on-surface mb-sm">Your canvas is empty</h3>
+      <p id="empty-state-copy" class="font-body text-body-md text-on-surface-variant">
+        Paste a URL, type a topic, or upload a document in the panel on the right — each research session becomes a card here.
       </p>
-      <div class="flex gap-xs flex-wrap">
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#graphs</span>
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#knowledge</span>
-      </div>
     </div>
+  </div>
 
-    <!-- Card 2 -->
-    <div class="card-hover absolute bg-surface rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-pointer hover:shadow-floating rotate-1"
-      style="left:490px;top:280px;" onclick="openReader('Understanding Context in AI','arxiv.org')">
-      <div class="flex justify-between items-start mb-md">
-        <span class="bg-secondary/10 text-on-secondary-fixed-variant px-sm py-xs rounded font-mono text-label-mono uppercase tracking-widest text-[10px]">Supporting Evidence</span>
-        <span class="material-symbols-outlined text-outline text-[18px]">attachment</span>
-      </div>
-      <h3 class="font-display text-headline-sm mb-sm">Understanding Context in AI</h3>
-      <p class="font-body text-body-md text-on-surface-variant leading-relaxed mb-md">
-        Exploring mechanisms that allow language models to retain and utilize contextual information over long sequences.
-      </p>
-      <div class="flex gap-xs flex-wrap">
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#context</span>
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#llm</span>
-      </div>
-    </div>
-
-    <!-- Card 3 -->
-    <div class="card-hover absolute bg-surface rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-pointer hover:shadow-floating -rotate-1"
-      style="left:450px;top:560px;" onclick="openReader('Memory Architectures','acm.org')">
-      <div class="flex justify-between items-start mb-md">
-        <span class="bg-outline-variant/30 text-on-tertiary-fixed-variant px-sm py-xs rounded font-mono text-label-mono uppercase tracking-widest text-[10px]">Reference</span>
-        <span class="material-symbols-outlined text-outline text-[18px]">more_horiz</span>
-      </div>
-      <h3 class="font-display text-headline-sm mb-sm">Memory Architectures</h3>
-      <p class="font-body text-body-md text-on-surface-variant leading-relaxed mb-md">
-        A comparative study of short-term and long-term memory structures in modern neural networks and cognitive systems.
-      </p>
-      <div class="flex gap-xs flex-wrap">
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#memory</span>
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#architecture</span>
-      </div>
-    </div>
-
-    <!-- Card 4 -->
-    <div class="card-hover absolute bg-surface rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-pointer hover:shadow-floating rotate-1"
-      style="left:840px;top:380px;" onclick="openReader('The Future of Interfaces','nngroup.com')">
-      <div class="flex justify-between items-start mb-md">
-        <span class="bg-primary/10 text-primary px-sm py-xs rounded font-mono text-label-mono uppercase tracking-widest text-[10px]">Insight</span>
-        <span class="material-symbols-outlined text-outline text-[18px]">more_horiz</span>
-      </div>
-      <h3 class="font-display text-headline-sm mb-sm">The Future of Interfaces</h3>
-      <p class="font-body text-body-md text-on-surface-variant leading-relaxed mb-md">
-        How spatial computing and conversational AI are reshaping UX paradigms beyond traditional screens and flat GUIs.
-      </p>
-      <div class="flex gap-xs flex-wrap">
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#ux</span>
-        <span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">#spatial</span>
-      </div>
-    </div>
-
-    <!-- Synthesize cluster button -->
-    <div class="absolute z-10" style="left:570px;top:248px;">
-      <button onclick="openChatPanel()"
-        class="flex items-center gap-xs h-8 px-md bg-primary text-on-primary rounded-full shadow-floating text-label-mono font-mono hover:bg-[#8f2d1f] transition-all active:scale-95">
-        <span class="material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' 1">auto_awesome</span>
-        Synthesize Cluster
-      </button>
-    </div>
-
-  </div><!-- /canvas-world -->
+  <div id="canvas-world" class="absolute inset-0" style="transform-origin: 0 0;"></div>
 </main>
 
-<!-- ═══════════════════════════════════════════════
-     SYNTHESIS CHAT (right panel)
-═══════════════════════════════════════════════ -->
+<!-- ═══════════ SYNTHESIS CHAT ═══════════ -->
 <aside id="chat-panel"
   class="fixed right-0 top-0 h-full z-40 flex flex-col pt-14 bg-surface-container-low border-l border-outline-variant/30 shadow-paper w-[360px] overflow-hidden rounded-tl-2xl rounded-bl-2xl">
 
-  <!-- Chat header -->
   <div class="flex-none px-lg pt-lg pb-md border-b border-outline-variant/20">
-    <div class="flex items-center justify-between mb-md">
+    <div class="flex items-center justify-between">
       <h2 class="font-display text-headline-sm text-secondary">Synthesis Chat</h2>
       <div class="flex items-center gap-sm">
         <div class="bg-surface-container-highest px-md py-xs rounded-full border border-outline-variant/20 flex items-center gap-xs">
           <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-          <span id="context-badge-text" class="font-mono text-label-mono text-on-surface-variant">Context: 4 Cards</span>
+          <span id="context-badge-text" class="font-mono text-label-mono text-on-surface-variant">No context</span>
         </div>
-        <button id="close-chat" class="w-8 h-8 rounded-lg flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container transition-all">
+        <button id="close-chat" class="w-8 h-8 rounded-lg flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container transition-all" title="Hide panel">
           <span class="material-symbols-outlined text-[18px]">chevron_right</span>
         </button>
       </div>
     </div>
-    <div class="flex items-center gap-md">
-      <div class="flex -space-x-2">
-        <div class="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-high flex items-center justify-center font-mono text-[10px] font-bold text-on-surface-variant">SM</div>
-        <div class="w-8 h-8 rounded-full border-2 border-surface bg-primary/10 flex items-center justify-center">
-          <span class="material-symbols-outlined text-primary text-sm">psychology</span>
-        </div>
-      </div>
-      <p class="font-body text-body-sm text-on-surface-variant leading-tight">
-        Analyzing connections between <b class="text-on-surface">Knowledge Graphs</b> and <b class="text-on-surface">Context in AI</b>.
-      </p>
-    </div>
   </div>
 
-  <!-- Messages -->
-  <div id="chat-messages" class="flex-1 overflow-y-auto px-lg py-md flex flex-col gap-xl">
+  <div id="chat-messages" class="flex-1 overflow-y-auto px-lg py-md flex flex-col gap-xl"></div>
 
-    <!-- AI message -->
-    <div class="flex flex-col gap-sm">
-      <div class="flex items-center gap-xs">
-        <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">psychology</span>
-        <span class="font-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">AI Synthesis Assistant</span>
-      </div>
-      <div class="font-body text-body-md text-on-surface-variant leading-relaxed">
-        Based on your active research cards, I've identified a strong correlation between haptic feedback and cognitive load reduction. I see 4 cards focused on knowledge structures and interface patterns. How can I help synthesize them?
-      </div>
-    </div>
-
-    <!-- User message -->
-    <div class="flex flex-col gap-xs items-end">
-      <div class="bg-[#E8E3DC] p-md rounded-xl rounded-tr-none max-w-[90%] shadow-paper border border-outline-variant/10">
-        <p class="font-body text-body-md text-on-surface">Summarize the key findings from these cards.</p>
-      </div>
-      <span class="font-mono text-[10px] text-outline px-xs uppercase tracking-tighter">Researcher</span>
-    </div>
-
-    <!-- AI with insight card -->
-    <div class="flex flex-col gap-sm">
-      <div class="flex items-center gap-xs">
-        <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">psychology</span>
-        <span class="font-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">AI Synthesis Assistant</span>
-      </div>
-      <div class="font-body text-body-md text-on-surface-variant leading-relaxed">
-        Based on your active research cards, here's a synthesized insight on spatial interface paradigms.
-        <div class="mt-md p-md bg-white/40 border-l-4 border-secondary rounded-r-lg">
-          <p class="font-body text-body-sm italic text-on-surface">"Users adapt faster to spatial, canvas-based interfaces when prior context is preserved across interactions — the map becomes the memory."</p>
-          <div class="mt-sm font-mono text-[10px] text-primary uppercase tracking-widest">Generated Insight · Drag to Canvas</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- User message 2 -->
-    <div class="flex flex-col gap-xs items-end">
-      <div class="bg-[#E8E3DC] p-md rounded-xl rounded-tr-none max-w-[90%] shadow-paper border border-outline-variant/10">
-        <p class="font-body text-body-md text-on-surface">Can you map this to the current user journey?</p>
-      </div>
-      <span class="font-mono text-[10px] text-outline px-xs uppercase tracking-tighter">Researcher</span>
-    </div>
-
-
-  </div>
-
-  <!-- Unified command bar -->
   <div class="flex-none p-lg bg-surface/40 backdrop-blur-sm border-t border-outline-variant/10">
     <div class="relative">
       <textarea id="chat-input"
@@ -458,233 +209,526 @@
         <span id="chat-send-icon" class="material-symbols-outlined group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
       </button>
     </div>
-    <!-- Mode hint -->
     <div class="flex items-center justify-between mt-sm">
       <span id="input-mode-hint" class="font-mono text-[10px] text-outline flex items-center gap-xs">
         <span class="material-symbols-outlined text-[12px]">info</span>
         URL or topic → research · question → ask AI
       </span>
-      <div class="flex gap-sm">
-        <button class="text-on-surface-variant/60 hover:text-primary transition-colors" title="Attach file">
-          <span class="material-symbols-outlined text-[18px]">attach_file</span>
-        </button>
-        <button class="text-on-surface-variant/60 hover:text-primary transition-colors" title="Voice input">
-          <span class="material-symbols-outlined text-[18px]">mic</span>
-        </button>
-      </div>
+      <button id="attach-btn" class="text-on-surface-variant/60 hover:text-primary transition-colors" title="Upload TXT / PDF">
+        <span class="material-symbols-outlined text-[18px]">attach_file</span>
+      </button>
     </div>
   </div>
 </aside>
 
-<!-- ═══════════════════════════════════════════════
-     CARD READER MODAL
-═══════════════════════════════════════════════ -->
+<!-- ═══════════ CARD READER ═══════════ -->
 <div id="reader-overlay"
   class="fixed inset-0 z-[100] hidden items-center justify-center p-xl backdrop-blur-md bg-surface-container-low/80">
 
   <article class="relative w-full max-w-[800px] h-[80vh] bg-[#FCFBF8] rounded-2xl shadow-floating overflow-hidden flex flex-col border border-outline-variant/10">
 
-    <!-- Close button -->
-    <button onclick="closeReader()"
-      class="absolute top-lg right-lg text-outline hover:text-primary transition-colors z-10">
+    <button id="reader-close" class="absolute top-lg right-lg text-outline hover:text-primary transition-colors z-10">
       <span class="material-symbols-outlined text-[28px]">close</span>
     </button>
 
-    <!-- Reader header -->
     <header class="pt-xl px-xl pb-lg border-b border-outline-variant/20 shrink-0">
       <div class="flex items-center gap-sm mb-sm">
-        <span id="reader-ref" class="bg-secondary-container/30 text-on-secondary-fixed-variant px-sm py-xs rounded font-mono text-label-mono uppercase tracking-widest text-[10px]">SOURCE</span>
+        <span class="bg-secondary-container/30 text-on-secondary-fixed-variant px-sm py-xs rounded font-mono text-label-mono uppercase tracking-widest text-[10px]">Research Session</span>
         <span class="text-outline font-mono text-label-mono">·</span>
         <span id="reader-meta" class="font-mono text-label-mono text-outline uppercase tracking-widest"></span>
       </div>
       <h1 id="reader-title" class="font-display text-headline-md text-on-surface tracking-tight max-w-[90%]"></h1>
-      <div class="mt-md flex items-center gap-md">
-        <div class="flex items-center gap-xs">
-          <span class="material-symbols-outlined text-sm text-on-surface-variant">link</span>
-          <span id="reader-source" class="font-mono text-label-mono text-on-surface-variant/60 uppercase"></span>
-        </div>
-      </div>
     </header>
 
-    <!-- Floating highlight toolbar -->
-    <div class="absolute top-[calc(35%+1rem)] left-1/2 -translate-x-1/2 z-20 bg-surface-container-lowest border border-outline-variant shadow-floating rounded-full px-md py-sm flex items-center gap-md">
-      <button class="text-primary hover:scale-110 transition-transform">
-        <span class="material-symbols-outlined text-[18px]">stylus_note</span>
-      </button>
-      <div class="w-[1px] h-4 bg-outline-variant"></div>
-      <button class="text-secondary hover:scale-110 transition-transform">
-        <span class="material-symbols-outlined text-[18px]">chat_bubble</span>
-      </button>
-      <div class="w-[1px] h-4 bg-outline-variant"></div>
-      <button class="text-on-surface-variant hover:scale-110 transition-transform">
-        <span class="material-symbols-outlined text-[18px]">share</span>
-      </button>
-      <div class="w-[1px] h-4 bg-outline-variant"></div>
-      <div class="flex gap-xs">
-        <div class="w-4 h-4 rounded-full bg-primary/30 cursor-pointer border border-white hover:scale-110 transition-transform"></div>
-        <div class="w-4 h-4 rounded-full bg-secondary/30 cursor-pointer border border-white hover:scale-110 transition-transform"></div>
-        <div class="w-4 h-4 rounded-full bg-outline-variant cursor-pointer border border-white hover:scale-110 transition-transform"></div>
-      </div>
-    </div>
+    <div id="reader-body" class="flex-1 overflow-y-auto px-xl py-xl select-text"></div>
 
-    <!-- Reader content -->
-    <div id="reader-body" class="flex-1 overflow-y-auto px-xl py-xl">
-      <div class="max-w-[640px] mx-auto space-y-lg">
-        <div class="space-y-sm animate-pulse">
-          <div class="h-4 bg-surface-container-high rounded w-full"></div>
-          <div class="h-4 bg-surface-container-high rounded w-[95%]"></div>
-          <div class="h-4 bg-surface-container-high rounded w-full"></div>
-          <div class="h-4 bg-surface-container-high rounded w-[88%]"></div>
-          <div class="h-4 bg-surface-container-high rounded w-[96%]"></div>
-          <div class="h-4 bg-surface-container-high rounded w-[80%]"></div>
-        </div>
-        <div class="my-lg p-md bg-surface-container-low rounded-xl border-l-4 border-primary shadow-paper animate-pulse">
-          <div class="h-3 bg-surface-container-high rounded w-full mb-sm"></div>
-          <div class="h-3 bg-surface-container-high rounded w-[85%]"></div>
-        </div>
-        <div class="space-y-sm animate-pulse">
-          <div class="h-4 bg-surface-container-high rounded w-[92%]"></div>
-          <div class="h-4 bg-surface-container-high rounded w-full"></div>
-          <div class="h-4 bg-surface-container-high rounded w-[85%]"></div>
-          <div class="h-4 bg-surface-container-high rounded w-[97%]"></div>
-          <div class="h-4 bg-surface-container-high rounded w-[70%]"></div>
-        </div>
-        <div class="space-y-sm animate-pulse pt-sm">
-          <div class="h-4 bg-surface-container-high rounded w-full"></div>
-          <div class="h-4 bg-surface-container-high rounded w-[90%]"></div>
-          <div class="h-4 bg-surface-container-high rounded w-[94%]"></div>
-          <div class="h-4 bg-surface-container-high rounded w-[62%]"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Reader footer -->
     <footer class="h-16 px-xl bg-surface-container border-t border-outline-variant/20 flex items-center justify-between shrink-0">
       <div class="flex items-center gap-md">
-        <button class="text-outline hover:text-primary transition-colors flex items-center gap-xs font-body text-body-sm">
+        <button id="reader-prev" class="text-outline hover:text-primary transition-colors flex items-center gap-xs font-body text-body-sm disabled:opacity-30 disabled:hover:text-outline">
           <span class="material-symbols-outlined text-[16px]">arrow_back</span>
           Previous
         </button>
         <div class="h-4 w-[1px] bg-outline-variant"></div>
-        <button class="text-outline hover:text-primary transition-colors flex items-center gap-xs font-body text-body-sm">
+        <button id="reader-next" class="text-outline hover:text-primary transition-colors flex items-center gap-xs font-body text-body-sm disabled:opacity-30 disabled:hover:text-outline">
           Next
           <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
         </button>
       </div>
-      <div class="flex items-center gap-lg">
-        <div class="flex items-center gap-sm">
-          <div class="w-24 h-1 bg-outline-variant/30 rounded-full relative overflow-hidden">
-            <div class="absolute top-0 left-0 h-full w-2/3 bg-primary rounded-full"></div>
-          </div>
-          <span class="font-mono text-[10px] text-outline uppercase tracking-widest">65% READ</span>
-        </div>
-        <button class="bg-primary text-on-primary px-md py-xs rounded-full font-mono text-label-mono flex items-center gap-xs shadow-paper hover:shadow-floating transition-all active:scale-95">
-          <span class="material-symbols-outlined text-sm">bookmark</span>
-          Save to Research
-        </button>
-      </div>
+      <span id="reader-counter" class="font-mono text-[10px] text-outline uppercase tracking-widest"></span>
     </footer>
-
   </article>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     JS
-═══════════════════════════════════════════════ -->
+<!-- ═══════════ JS ═══════════ -->
 <script>
+  /* ── Constants & state ─────────────────────── */
+  const API_BASE = 'https://mindmapper-api-mu.vercel.app';
+  const CLERK_KEY = 'pk_test_c2tpbGxlZC1vcmNhLTc4LmNsZXJrLmFjY291bnRzLmRldiQ'; // publishable (public by design)
+  const POSITIONS_KEY = 'canvasPositions.v1';
+  const MAX_CANVAS_CARDS = 12;
+
+  let clerkInstance = null;
+  let currentSessionId = null;      // active session = Q&A context
+  const sessionCache = {};          // id → {topic, summary, nodes, sources, depth, created_at, detailLoaded}
+  let sessionOrder = [];            // ids, newest first (drives sidebar + reader nav)
+  let readerIndex = -1;
+
+  function escHtml(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
   /* ── Panel toggles ─────────────────────────── */
-  const sidebar        = document.getElementById('sidebar');
-  const chatPanel      = document.getElementById('chat-panel');
-  const canvas         = document.getElementById('canvas');
+  const sidebar = document.getElementById('sidebar');
+  const chatPanel = document.getElementById('chat-panel');
+  const canvas = document.getElementById('canvas');
   const openSidebarBtn = document.getElementById('open-sidebar');
-  const openChatBtnEl  = document.getElementById('open-chat-btn');
-  const closeSidebarBtn = document.getElementById('close-sidebar');
-  const closeChatBtn    = document.getElementById('close-chat');
+  const openChatBtnEl = document.getElementById('open-chat-btn');
 
   function hideSidebar() {
-    sidebar.style.width = '0';
-    sidebar.style.opacity = '0';
-    sidebar.style.overflow = 'hidden';
-    canvas.style.left = '0px';
-    openSidebarBtn.style.display = 'flex';
+    sidebar.style.width = '0'; sidebar.style.opacity = '0'; sidebar.style.overflow = 'hidden';
+    canvas.style.left = '0px'; openSidebarBtn.style.display = 'flex';
   }
   function showSidebar() {
-    sidebar.style.width = '300px';
-    sidebar.style.opacity = '1';
-    sidebar.style.overflow = '';
-    canvas.style.left = '300px';
-    openSidebarBtn.style.display = 'none';
+    sidebar.style.width = '300px'; sidebar.style.opacity = '1'; sidebar.style.overflow = '';
+    canvas.style.left = '300px'; openSidebarBtn.style.display = 'none';
   }
   function hideChatPanel() {
-    chatPanel.style.width = '0';
-    chatPanel.style.opacity = '0';
-    chatPanel.style.overflow = 'hidden';
-    canvas.style.right = '0px';
-    openChatBtnEl.style.display = 'flex';
+    chatPanel.style.width = '0'; chatPanel.style.opacity = '0'; chatPanel.style.overflow = 'hidden';
+    canvas.style.right = '0px'; openChatBtnEl.style.display = 'flex';
   }
   function showChatPanel() {
-    chatPanel.style.width = '360px';
-    chatPanel.style.opacity = '1';
-    chatPanel.style.overflow = '';
-    canvas.style.right = '360px';
-    openChatBtnEl.style.display = 'none';
+    chatPanel.style.width = '360px'; chatPanel.style.opacity = '1'; chatPanel.style.overflow = '';
+    canvas.style.right = '360px'; openChatBtnEl.style.display = 'none';
   }
+  document.getElementById('close-sidebar').addEventListener('click', hideSidebar);
+  openSidebarBtn.addEventListener('click', showSidebar);
+  document.getElementById('close-chat').addEventListener('click', hideChatPanel);
+  openChatBtnEl.addEventListener('click', showChatPanel);
 
-  closeSidebarBtn.addEventListener('click', hideSidebar);
-  openSidebarBtn.addEventListener('click',  showSidebar);
-  closeChatBtn.addEventListener('click',    hideChatPanel);
-  openChatBtnEl.addEventListener('click',   showChatPanel);
-
-  function openChatPanel() { showChatPanel(); }
-
-  /* ── Zoom ──────────────────────────────────── */
-  let scale = 1;
+  /* ── Zoom + pan ────────────────────────────── */
+  let scale = 1, ox = 0, oy = 0;
   const world = document.getElementById('canvas-world');
   const zoomLabel = document.getElementById('zoom-label');
-  function zoom(delta) {
-    scale = Math.min(2, Math.max(0.3, scale + delta));
+
+  function applyTransform() {
     world.style.transform = `scale(${scale}) translate(${ox/scale}px, ${oy/scale}px)`;
     zoomLabel.textContent = Math.round(scale * 100) + '%';
   }
+  function zoomBy(delta, cx, cy) {
+    const old = scale;
+    scale = Math.min(2, Math.max(0.3, scale + delta));
+    if (cx !== undefined) {
+      ox = cx - (cx - ox) * (scale / old);
+      oy = cy - (cy - oy) * (scale / old);
+      lx = ox; ly = oy;
+    }
+    applyTransform();
+  }
+  document.getElementById('zoom-in').addEventListener('click', () => zoomBy(0.1));
+  document.getElementById('zoom-out').addEventListener('click', () => zoomBy(-0.1));
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    zoomBy(-e.deltaY * 0.0012, e.clientX - rect.left, e.clientY - rect.top);
+  }, { passive: false });
 
-  /* ── Canvas pan ────────────────────────────── */
-  let panning = false, startX = 0, startY = 0, ox = 0, oy = 0, lx = 0, ly = 0;
+  let panning = false, draggingCard = null, startX = 0, startY = 0, lx = 0, ly = 0;
+  let cardStartLeft = 0, cardStartTop = 0, moved = false;
+
   canvas.addEventListener('mousedown', e => {
-    if (e.target.closest('[onclick], button, a, textarea')) return;
+    const card = e.target.closest('.canvas-card');
+    moved = false;
+    if (card) {
+      draggingCard = card;
+      startX = e.clientX; startY = e.clientY;
+      cardStartLeft = parseFloat(card.style.left) || 0;
+      cardStartTop = parseFloat(card.style.top) || 0;
+      card.classList.add('dragging');
+      e.preventDefault();
+      return;
+    }
+    if (e.target.closest('button, a, textarea, input')) return;
     panning = true;
-    startX = e.clientX - lx;
-    startY = e.clientY - ly;
+    startX = e.clientX - lx; startY = e.clientY - ly;
     canvas.style.cursor = 'grabbing';
   });
   window.addEventListener('mousemove', e => {
+    if (draggingCard) {
+      const dx = (e.clientX - startX) / scale;
+      const dy = (e.clientY - startY) / scale;
+      if (Math.abs(e.clientX - startX) > 4 || Math.abs(e.clientY - startY) > 4) moved = true;
+      draggingCard.style.left = `${cardStartLeft + dx}px`;
+      draggingCard.style.top = `${cardStartTop + dy}px`;
+      return;
+    }
     if (!panning) return;
-    ox = e.clientX - startX;
-    oy = e.clientY - startY;
-    world.style.transform = `scale(${scale}) translate(${ox/scale}px, ${oy/scale}px)`;
+    ox = e.clientX - startX; oy = e.clientY - startY;
+    applyTransform();
   });
   window.addEventListener('mouseup', () => {
+    if (draggingCard) {
+      draggingCard.classList.remove('dragging');
+      if (moved) savePosition(draggingCard.dataset.id, parseFloat(draggingCard.style.left), parseFloat(draggingCard.style.top));
+      else openReaderById(draggingCard.dataset.id);
+      draggingCard = null;
+      return;
+    }
     if (panning) { lx = ox; ly = oy; panning = false; canvas.style.cursor = ''; }
   });
   canvas.addEventListener('touchstart', e => {
-    if (e.touches.length !== 1) return;
+    if (e.touches.length !== 1 || e.target.closest('.canvas-card, button, a, textarea, input')) return;
     panning = true;
-    startX = e.touches[0].clientX - lx;
-    startY = e.touches[0].clientY - ly;
+    startX = e.touches[0].clientX - lx; startY = e.touches[0].clientY - ly;
   }, { passive: true });
   window.addEventListener('touchmove', e => {
     if (!panning || e.touches.length !== 1) return;
-    ox = e.touches[0].clientX - startX;
-    oy = e.touches[0].clientY - startY;
-    world.style.transform = `scale(${scale}) translate(${ox/scale}px, ${oy/scale}px)`;
+    ox = e.touches[0].clientX - startX; oy = e.touches[0].clientY - startY;
+    applyTransform();
   }, { passive: true });
-  window.addEventListener('touchend', () => {
-    if (panning) { lx = ox; ly = oy; panning = false; }
+  window.addEventListener('touchend', () => { if (panning) { lx = ox; ly = oy; panning = false; } });
+
+  /* ── Card position persistence ─────────────── */
+  function loadPositions() {
+    try { return JSON.parse(localStorage.getItem(POSITIONS_KEY) || '{}'); } catch { return {}; }
+  }
+  function savePosition(id, x, y) {
+    const all = loadPositions();
+    all[id] = { x: Math.round(x), y: Math.round(y) };
+    try { localStorage.setItem(POSITIONS_KEY, JSON.stringify(all)); } catch {}
+  }
+
+  /* ── Auth (Clerk) ──────────────────────────── */
+  const clerkReady = (async () => {
+    try {
+      clerkInstance = new window.Clerk(CLERK_KEY);
+      await clerkInstance.load({ telemetry: false });
+      renderAuthArea();
+      clerkInstance.addListener(() => { renderAuthArea(); bootData(); });
+    } catch (e) {
+      console.error('Clerk failed to load', e);
+      renderAuthArea();
+    }
+  })();
+
+  function isSignedIn() { return !!(clerkInstance && clerkInstance.user); }
+
+  function renderAuthArea() {
+    const area = document.getElementById('auth-area');
+    if (isSignedIn()) {
+      area.innerHTML = '<div id="clerk-user-btn"></div>';
+      try { clerkInstance.mountUserButton(document.getElementById('clerk-user-btn')); } catch {}
+    } else {
+      area.innerHTML = '<button id="signin-btn" class="bg-primary text-on-primary px-lg py-xs rounded-full font-body text-btn shadow-paper hover:shadow-floating transition-all active:scale-95">Sign in</button>';
+      document.getElementById('signin-btn').addEventListener('click', openSignIn);
+    }
+  }
+
+  function openSignIn() {
+    if (!clerkInstance) return;
+    clerkInstance.openSignIn({
+      afterSignInUrl: window.location.href,
+      afterSignUpUrl: window.location.href,
+    });
+  }
+
+  async function getAuthToken() {
+    await clerkReady;
+    if (!clerkInstance || !clerkInstance.session) return null;
+    try { return await clerkInstance.session.getToken(); } catch { return null; }
+  }
+
+  /* ── API ───────────────────────────────────── */
+  async function requestJson(path, options = {}) {
+    const token = await getAuthToken();
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        ...(options.headers || {}),
+      },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error(data.detail || data.message || `Request failed: ${res.status}`);
+      err.status = res.status;
+      throw err;
+    }
+    return data;
+  }
+
+  async function pollJob(jobId, onProgress) {
+    const INTERVAL = 2000, MAX_WAIT = 120000;
+    const start = Date.now();
+    while (Date.now() - start < MAX_WAIT) {
+      await new Promise(r => setTimeout(r, INTERVAL));
+      if (onProgress) onProgress(`Transcribing… ${Math.round((Date.now()-start)/1000)}s`);
+      const job = await requestJson(`/api/jobs/${jobId}`);
+      if (job.status === 'done' || job.status === 'failed') return job;
+    }
+    return { status: 'failed', error: 'Timed out. Please try again.' };
+  }
+
+  /* ── Sidebar (sessions) ────────────────────── */
+  function sessionIcon(topic) {
+    if (/youtu\.be|youtube\.com/i.test(topic)) return ['play_circle', 'text-primary', 'bg-primary/10'];
+    if (/^https?:\/\//i.test(topic) || /^[\w-]+\.[a-z]{2,}/i.test(topic)) return ['public', 'text-secondary', 'bg-secondary/10'];
+    if (/\.pdf$/i.test(topic)) return ['picture_as_pdf', 'text-primary', 'bg-primary/20'];
+    if (/\.txt$/i.test(topic)) return ['notes', 'text-on-surface-variant', 'bg-surface-container-highest'];
+    return ['auto_awesome', 'text-secondary', 'bg-secondary/10'];
+  }
+
+  function shortDate(raw) {
+    if (!raw) return '';
+    try {
+      return new Date(raw).toLocaleDateString([], { month: 'short', day: 'numeric' });
+    } catch { return ''; }
+  }
+
+  function renderSidebar(filter = '') {
+    const list = document.getElementById('source-list');
+    const q = (filter || '').toLowerCase().trim();
+    const items = sessionOrder
+      .map(id => sessionCache[id])
+      .filter(s => s && (!q || (s.topic || '').toLowerCase().includes(q)));
+
+    if (!isSignedIn()) {
+      list.innerHTML = `
+        <div class="p-lg text-center">
+          <span class="material-symbols-outlined text-outline text-[36px] mb-sm inline-block">lock</span>
+          <p class="font-body text-body-sm text-on-surface-variant mb-md">Sign in to see your research library and start new sessions.</p>
+          <button id="sidebar-signin" class="bg-primary text-on-primary px-lg py-xs rounded-full font-body text-btn shadow-paper">Sign in</button>
+        </div>`;
+      const btn = document.getElementById('sidebar-signin');
+      if (btn) btn.addEventListener('click', openSignIn);
+      updateFooter(0);
+      return;
+    }
+
+    if (!items.length) {
+      list.innerHTML = `
+        <div class="p-lg text-center">
+          <span class="material-symbols-outlined text-outline text-[36px] mb-sm inline-block">${q ? 'search_off' : 'library_books'}</span>
+          <p class="font-body text-body-sm text-on-surface-variant">${q ? 'No sessions match your search.' : 'No research yet — start one in the chat panel.'}</p>
+        </div>`;
+      updateFooter(0);
+      return;
+    }
+
+    list.innerHTML = items.map(s => {
+      const icon = sessionIcon(s.topic || '');
+      return `
+        <div class="sidebar-item group relative flex items-center gap-sm p-sm bg-surface-container-high/60 rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:bg-surface-container-highest transition-all h-[80px] shrink-0 shadow-paper" data-id="${escHtml(s.id)}">
+          <div class="w-12 h-12 rounded-xl ${icon[2]} flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined ${icon[1]} text-[22px]" style="font-variation-settings:'FILL' 1">${icon[0]}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">${escHtml(s.topic || 'Untitled')}</h4>
+            <p class="font-mono text-[10px] text-outline truncate uppercase mt-[3px]">${escHtml(shortDate(s.created_at))} · ${escHtml(s.depth || 'Detailed')}</p>
+          </div>
+          <button class="sidebar-delete absolute top-xs right-xs w-6 h-6 rounded-full flex items-center justify-center text-outline hover:text-primary hover:bg-primary/10" data-delete="${escHtml(s.id)}" title="Delete session">
+            <span class="material-symbols-outlined text-[14px]">delete</span>
+          </button>
+        </div>`;
+    }).join('');
+
+    list.querySelectorAll('.sidebar-item').forEach(el => {
+      el.addEventListener('click', e => {
+        if (e.target.closest('[data-delete]')) return;
+        openReaderById(el.dataset.id);
+      });
+    });
+    list.querySelectorAll('[data-delete]').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        e.stopPropagation();
+        const id = btn.dataset.delete;
+        if (!confirm('Delete this research session permanently?')) return;
+        try {
+          await requestJson(`/api/sessions/${id}`, { method: 'DELETE' });
+          delete sessionCache[id];
+          sessionOrder = sessionOrder.filter(x => x !== id);
+          if (currentSessionId === id) currentSessionId = sessionOrder[0] || null;
+          renderSidebar(document.getElementById('header-search').value);
+          renderCanvasCards();
+          updateContextBadge();
+        } catch (err) {
+          addAiMessage(`<span class="text-[#ba1a1a]">⚠ ${escHtml(err.message)}</span>`);
+        }
+      });
+    });
+    updateFooter(items.length);
+  }
+
+  function updateFooter(count) {
+    document.getElementById('inbox-footer').innerHTML =
+      `<span class="material-symbols-outlined text-[13px]">inbox</span> ${count} session${count !== 1 ? 's' : ''}`;
+  }
+
+  /* ── Canvas cards ──────────────────────────── */
+  function renderCanvasCards() {
+    world.innerHTML = '';
+    const ids = sessionOrder.slice(0, MAX_CANVAS_CARDS);
+    const empty = document.getElementById('empty-state');
+    const emptyCopy = document.getElementById('empty-state-copy');
+
+    if (!ids.length) {
+      empty.classList.remove('hidden');
+      emptyCopy.textContent = isSignedIn()
+        ? 'Paste a URL, type a topic, or upload a document in the panel on the right — each research session becomes a card here.'
+        : 'Sign in (top right), then paste a URL or type a topic in the chat panel to research it.';
+      return;
+    }
+    empty.classList.add('hidden');
+
+    const positions = loadPositions();
+    ids.forEach((id, i) => {
+      const s = sessionCache[id];
+      if (!s) return;
+      const saved = positions[id];
+      const col = i % 3, row = Math.floor(i / 3);
+      const x = saved ? saved.x : 80 + col * 340;
+      const y = saved ? saved.y : 80 + row * 280;
+      world.appendChild(buildCard(s, x, y));
+    });
+  }
+
+  function buildCard(s, x, y) {
+    const card = document.createElement('div');
+    card.className = 'canvas-card card-hover absolute bg-surface rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-grab';
+    card.style.left = `${x}px`;
+    card.style.top = `${y}px`;
+    card.dataset.id = s.id;
+    const isContext = s.id === currentSessionId;
+    card.innerHTML = `
+      <div class="flex justify-between items-start mb-md">
+        <span class="${isContext ? 'bg-secondary/10 text-on-secondary-fixed-variant' : 'bg-primary/10 text-primary'} px-sm py-xs rounded font-mono text-label-mono uppercase tracking-widest text-[10px]">${isContext ? 'Active Context' : 'AI Synthesis'}</span>
+        <span class="font-mono text-[10px] text-outline uppercase">${escHtml(shortDate(s.created_at))}</span>
+      </div>
+      <h3 class="font-display text-headline-sm mb-sm" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${escHtml(s.topic || 'Untitled')}</h3>
+      <p class="font-body text-body-md text-on-surface-variant leading-relaxed" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${escHtml(s.summary || 'Open to view this research session.')}</p>`;
+    return card;
+  }
+
+  function panToCard(x, y) {
+    ox = canvas.offsetWidth / 2 - (x + 150) * scale;
+    oy = canvas.offsetHeight / 2 - (y + 100) * scale;
+    lx = ox; ly = oy;
+    applyTransform();
+  }
+
+  function updateContextBadge() {
+    const badge = document.getElementById('context-badge-text');
+    if (!currentSessionId || !sessionCache[currentSessionId]) {
+      badge.textContent = 'No context';
+      return;
+    }
+    const t = sessionCache[currentSessionId].topic || '';
+    badge.textContent = `Context: ${t.length > 18 ? t.slice(0, 18) + '…' : t}`;
+  }
+
+  /* ── Reader ────────────────────────────────── */
+  const overlay = document.getElementById('reader-overlay');
+
+  async function openReaderById(id) {
+    const s = sessionCache[id];
+    if (!s) return;
+    readerIndex = sessionOrder.indexOf(id);
+    currentSessionId = id;
+    updateContextBadge();
+    renderCanvasCards();
+
+    document.getElementById('reader-title').textContent = s.topic || 'Untitled';
+    document.getElementById('reader-meta').textContent = `${s.depth || 'Detailed'} · ${shortDate(s.created_at)}`;
+    document.getElementById('reader-counter').textContent = `${readerIndex + 1} / ${sessionOrder.length}`;
+    document.getElementById('reader-prev').disabled = readerIndex <= 0;
+    document.getElementById('reader-next').disabled = readerIndex >= sessionOrder.length - 1;
+
+    const body = document.getElementById('reader-body');
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+
+    if (!s.detailLoaded) {
+      body.innerHTML = `
+        <div class="max-w-[640px] mx-auto space-y-sm animate-pulse pt-md">
+          ${'<div class="h-4 bg-surface-container-high rounded"></div>'.repeat(6)}
+        </div>`;
+      try {
+        const data = await requestJson(`/api/sessions/${id}`);
+        const sess = data.session || {};
+        s.summary = sess.summary || s.summary || '';
+        s.nodes = sess.mindmap || [];
+        s.sources = [...(data.sources || []), ...(sess.citations || [])];
+        s.detailLoaded = true;
+      } catch (err) {
+        body.innerHTML = `<div class="max-w-[640px] mx-auto pt-md font-body text-body-md text-[#ba1a1a]">Could not load this session: ${escHtml(err.message)}</div>`;
+        return;
+      }
+    }
+    body.innerHTML = buildReaderContent(s);
+  }
+
+  function buildReaderContent(sess) {
+    const rawParas = (sess.summary || '').split(/\n+/).filter(Boolean).slice(0, 8);
+    const paras = rawParas.map((p, i) => {
+      const cls = i === 0
+        ? 'font-body text-body-lg text-on-surface-variant leading-[1.8] first-letter:text-[3.5rem] first-letter:font-display first-letter:text-primary first-letter:mr-2 first-letter:float-left first-letter:leading-none'
+        : 'font-body text-body-lg text-on-surface-variant leading-[1.8]';
+      return `<p class="${cls}">${escHtml(p)}</p>`;
+    }).join('');
+
+    const nodeItems = (sess.nodes || []).slice(0, 12).map((n, i) => {
+      const t = n.title || '';
+      const d = n.description || n.body || '';
+      const accent = i % 2 === 0 ? 'border-primary' : 'border-secondary';
+      return t ? `
+        <div class="p-lg bg-surface-container-low rounded-xl border-l-4 ${accent} shadow-paper">
+          <h4 class="font-display text-headline-sm mb-xs text-on-surface">${escHtml(t)}</h4>
+          ${d ? `<p class="font-body text-body-md text-on-surface-variant">${escHtml(d)}</p>` : ''}
+        </div>` : '';
+    }).join('');
+
+    const srcItems = (sess.sources || []).slice(0, 8).map(src => {
+      const t = src.title || '';
+      const url = src.url || '';
+      const typ = src.source_type || src.type || '';
+      return t ? `
+        <div class="flex items-center gap-sm py-sm border-b border-outline-variant/10">
+          <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1">link</span>
+          ${url
+            ? `<a href="${escHtml(url)}" target="_blank" rel="noreferrer" class="font-mono text-label-mono text-secondary hover:underline flex-1 truncate">${escHtml(t)}</a>`
+            : `<span class="font-mono text-label-mono text-on-surface-variant flex-1 truncate">${escHtml(t)}</span>`}
+          ${typ ? `<span class="font-mono text-[10px] text-outline shrink-0 uppercase">${escHtml(typ)}</span>` : ''}
+        </div>` : '';
+    }).join('');
+
+    return `
+      <div class="max-w-[640px] mx-auto space-y-lg">
+        ${paras || '<p class="font-body text-body-md text-on-surface-variant">No summary stored for this session yet — ask a question in the chat panel to dig in.</p>'}
+        ${nodeItems ? `<div class="space-y-md pt-sm">${nodeItems}</div>` : ''}
+        ${srcItems ? `
+          <div class="pt-lg border-t border-outline-variant/20">
+            <h4 class="font-mono text-label-mono text-outline uppercase tracking-widest mb-md">Referenced Sources</h4>
+            <div class="space-y-xs">${srcItems}</div>
+          </div>` : ''}
+        <div class="h-8"></div>
+      </div>`;
+  }
+
+  function closeReader() {
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+  }
+  document.getElementById('reader-close').addEventListener('click', closeReader);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeReader(); });
+  window.addEventListener('keydown', e => { if (e.key === 'Escape') closeReader(); });
+  document.getElementById('reader-prev').addEventListener('click', () => {
+    if (readerIndex > 0) openReaderById(sessionOrder[readerIndex - 1]);
+  });
+  document.getElementById('reader-next').addEventListener('click', () => {
+    if (readerIndex < sessionOrder.length - 1) openReaderById(sessionOrder[readerIndex + 1]);
   });
 
-  /* ── Helpers ───────────────────────────────── */
-  function escHtml(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
+  /* ── Chat ──────────────────────────────────── */
+  const msgs = document.getElementById('chat-messages');
 
   function makeTypingEl() {
     const el = document.createElement('div');
@@ -699,7 +743,7 @@
     return el;
   }
 
-  function makeAiMsgEl(answerHtml, citationsHtml) {
+  function addAiMessage(html, citationsHtml) {
     const el = document.createElement('div');
     el.className = 'flex flex-col gap-sm';
     el.innerHTML = `
@@ -707,423 +751,171 @@
         <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1;">psychology</span>
         <span class="font-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">AI Synthesis Assistant</span>
       </div>
-      <div class="font-body text-body-md text-on-surface-variant leading-relaxed">${answerHtml}</div>
+      <div class="font-body text-body-md text-on-surface-variant leading-relaxed select-text">${html}</div>
       ${citationsHtml || ''}`;
+    msgs.appendChild(el);
+    msgs.scrollTop = msgs.scrollHeight;
     return el;
   }
 
-  const SKELETON_HTML = `
-    <div class="max-w-[640px] mx-auto space-y-lg">
-      <div class="space-y-sm animate-pulse">
-        <div class="h-4 bg-surface-container-high rounded w-full"></div>
-        <div class="h-4 bg-surface-container-high rounded w-[95%]"></div>
-        <div class="h-4 bg-surface-container-high rounded w-full"></div>
-        <div class="h-4 bg-surface-container-high rounded w-[88%]"></div>
-        <div class="h-4 bg-surface-container-high rounded w-[96%]"></div>
-        <div class="h-4 bg-surface-container-high rounded w-[80%]"></div>
+  function addUserMessage(text) {
+    const el = document.createElement('div');
+    el.className = 'flex flex-col gap-xs items-end';
+    el.innerHTML = `
+      <div class="bg-[#E8E3DC] p-md rounded-xl rounded-tr-none max-w-[90%] shadow-paper border border-outline-variant/10">
+        <p class="font-body text-body-md text-on-surface select-text">${escHtml(text)}</p>
       </div>
-      <div class="my-lg p-md bg-surface-container-low rounded-xl border-l-4 border-primary shadow-paper animate-pulse">
-        <div class="h-3 bg-surface-container-high rounded w-full mb-sm"></div>
-        <div class="h-3 bg-surface-container-high rounded w-[85%]"></div>
-      </div>
-      <div class="space-y-sm animate-pulse">
-        <div class="h-4 bg-surface-container-high rounded w-[92%]"></div>
-        <div class="h-4 bg-surface-container-high rounded w-full"></div>
-        <div class="h-4 bg-surface-container-high rounded w-[85%]"></div>
-        <div class="h-4 bg-surface-container-high rounded w-[97%]"></div>
-        <div class="h-4 bg-surface-container-high rounded w-[70%]"></div>
-      </div>
-    </div>`;
-
-  /* ── Card Reader ───────────────────────────── */
-  const overlay = document.getElementById('reader-overlay');
-
-  function buildReaderContent(sess) {
-    const rawParas = (sess.summary || '').split(/\n\n+/).filter(Boolean).slice(0, 6);
-    const paras = rawParas.map((p, i) => {
-      const cls = i === 0
-        ? 'font-body text-body-lg text-on-surface-variant leading-[1.8] first-letter:text-[3.5rem] first-letter:font-display first-letter:text-primary first-letter:mr-2 first-letter:float-left first-letter:leading-none'
-        : 'font-body text-body-lg text-on-surface-variant leading-[1.8]';
-      return `<p class="${cls}">${escHtml(p)}</p>`;
-    }).join('');
-
-    const nodeItems = (sess.nodes || []).slice(0, 6).map((n, i) => {
-      const t = n.title || n[0] || '';
-      const d = n.description || n.body || n[1] || '';
-      const accentColors = ['border-primary','border-secondary','border-primary','border-secondary'];
-      const accent = accentColors[i % accentColors.length];
-      return t ? `
-        <div class="p-lg bg-surface-container-low rounded-xl border-l-4 ${accent} shadow-paper">
-          <h4 class="font-display text-headline-sm mb-xs text-on-surface">${escHtml(t)}</h4>
-          ${d ? `<p class="font-body text-body-md text-on-surface-variant">${escHtml(d)}</p>` : ''}
-        </div>` : '';
-    }).join('');
-
-    const srcItems = (sess.sources || []).slice(0, 5).map(s => {
-      const t   = s.title || s[0] || '';
-      const url = s.url   || s[5] || '';
-      const typ = s.type  || s[1] || '';
-      return t ? `
-        <div class="flex items-center gap-sm py-sm border-b border-outline-variant/10">
-          <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1">link</span>
-          ${url
-            ? `<a href="${escHtml(url)}" target="_blank" rel="noreferrer" class="font-mono text-label-mono text-secondary hover:underline flex-1 truncate">${escHtml(t)}</a>`
-            : `<span class="font-mono text-label-mono text-on-surface-variant flex-1 truncate">${escHtml(t)}</span>`}
-          ${typ ? `<span class="font-mono text-[10px] text-outline shrink-0 uppercase">${escHtml(typ)}</span>` : ''}
-        </div>` : '';
-    }).join('');
-
-    return `
-      <div class="max-w-[640px] mx-auto space-y-lg">
-        ${paras || '<p class="font-body text-body-lg text-on-surface-variant leading-[1.8] first-letter:text-[3.5rem] first-letter:font-display first-letter:text-primary first-letter:mr-2 first-letter:float-left first-letter:leading-none">AI-synthesized research from your imported source.</p>'}
-        ${nodeItems ? `<div class="space-y-md pt-sm">${nodeItems}</div>` : ''}
-        ${srcItems ? `
-          <div class="pt-lg border-t border-outline-variant/20">
-            <h4 class="font-mono text-label-mono text-outline uppercase tracking-widest mb-md">Referenced Sources</h4>
-            <div class="space-y-xs">${srcItems}</div>
-          </div>` : ''}
-        <div class="h-8"></div>
-      </div>`;
+      <span class="font-mono text-[10px] text-outline px-xs uppercase tracking-tighter">You</span>`;
+    msgs.appendChild(el);
+    msgs.scrollTop = msgs.scrollHeight;
   }
 
-  function openReader(title, meta, sessionId) {
-    document.getElementById('reader-title').textContent = title;
-    document.getElementById('reader-meta').textContent  = meta;
-    document.getElementById('reader-source').textContent = meta;
-    const body = document.getElementById('reader-body');
-    body.innerHTML = (sessionId && sessions[sessionId])
-      ? buildReaderContent(sessions[sessionId])
-      : SKELETON_HTML;
-    overlay.classList.remove('hidden');
-    overlay.classList.add('flex');
-  }
-  function closeReader() {
-    overlay.classList.add('hidden');
-    overlay.classList.remove('flex');
-  }
-  overlay.addEventListener('click', e => { if (e.target === overlay) closeReader(); });
-  window.addEventListener('keydown', e => { if (e.key === 'Escape') closeReader(); });
-
-  /* ── Filter pills ──────────────────────────────── */
-  document.querySelectorAll('.filter-pill').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const filter = btn.dataset.filter;
-      document.querySelectorAll('.filter-pill').forEach(b => {
-        b.classList.remove('bg-on-surface', 'text-surface');
-        b.classList.add('bg-surface-container', 'text-on-surface-variant');
-      });
-      btn.classList.remove('bg-surface-container', 'text-on-surface-variant');
-      btn.classList.add('bg-on-surface', 'text-surface');
-      document.querySelectorAll('#source-list [data-source-type]').forEach(card => {
-        card.style.display = (filter === 'all' || card.dataset.sourceType === filter) ? '' : 'none';
-      });
-    });
-  });
-
-  /* ── Clerk auth ────────────────────────────────── */
-  const CLERK_KEY = 'pk_test_c2tpbGxlZC1vcmNhLTc4LmNsZXJrLmFjY291bnRzLmRldiQ';
-  let clerkInstance = null;
-
-  /* clerkReady resolves once Clerk has finished loading (or failed) */
-  const clerkReady = (async () => {
-    try {
-      clerkInstance = new window.Clerk(CLERK_KEY);
-      await clerkInstance.load();
-    } catch (e) { /* non-critical */ }
-  })();
-
-  async function getAuthToken() {
-    await clerkReady;
-    if (!clerkInstance?.session) return null;
-    try { return await clerkInstance.session.getToken(); } catch { return null; }
-  }
-
-  async function ensureSignedIn() {
-    await clerkReady;
-    return !!clerkInstance?.user;
-  }
-
-  /* ── Backend API ──────────────────────────────── */
-  const API_BASE = 'https://mindmapper-api-mu.vercel.app';
-  let currentSessionId = null;
-  const sessions = {};
-
-  async function requestJson(path, options = {}) {
-    const token = await getAuthToken();
-    const res = await fetch(`${API_BASE}${path}`, {
-      ...options,
-      headers: {
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        ...(options.headers || {}),
-      },
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || data.message || `Request failed: ${res.status}${res.status === 401 ? ' (auth required)' : ''}`);
-    return data;
-  }
-
-  async function pollJob(jobId, onProgress) {
-    const INTERVAL = 2000, MAX_WAIT = 120000;
-    const start = Date.now();
-    while (Date.now() - start < MAX_WAIT) {
-      await new Promise(r => setTimeout(r, INTERVAL));
-      onProgress?.(`Transcribing… ${Math.round((Date.now()-start)/1000)}s`);
-      const job = await requestJson(`/api/jobs/${jobId}`);
-      if (job.status === 'done' || job.status === 'failed') return job;
-    }
-    return { status: 'failed', error: 'Timed out. Please try again.' };
-  }
-
-  function updateContextBadge() {
-    const count = Object.keys(sessions).length + 4; // +4 for demo cards
-    const badge = document.getElementById('context-badge-text');
-    if (badge) badge.textContent = `Context: ${count} Card${count !== 1 ? 's' : ''}`;
-  }
-
-  /* ── URL detector ─────────────────────────────── */
   function isUrl(s) {
     return /^https?:\/\//i.test(s) || /^(www\.)?[\w-]+\.[a-z]{2,}(\/|$)/i.test(s);
   }
 
-  /* ── Add source card to left sidebar ─────────── */
-  function addSidebarCard(title, meta, sessionId, type, icon, iconColor, iconBg) {
-    const list = document.getElementById('source-list');
-    const card = document.createElement('div');
-    card.dataset.sourceType = type;
-    card.className = 'group flex items-center gap-sm p-sm bg-surface-container-high/60 rounded-xl border border-outline-variant/20 cursor-pointer hover:shadow-paper hover:bg-surface-container-highest transition-all h-[80px] shrink-0 shadow-paper';
-    card.addEventListener('click', () => openReader(title, meta, sessionId));
-    card.innerHTML = `
-      <div class="w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined ${iconColor} text-[22px]" style="font-variation-settings:'FILL' 1">${icon}</span>
-      </div>
-      <div class="flex-1 min-w-0">
-        <h4 class="font-body text-body-sm font-semibold truncate text-on-surface">${escHtml(title)}</h4>
-        <p class="font-mono text-[10px] text-outline truncate uppercase mt-[3px]">${escHtml(meta)}</p>
-      </div>`;
-    list.insertBefore(card, list.firstChild);
-    const total = list.querySelectorAll('[data-source-type]').length;
-    document.getElementById('inbox-footer').innerHTML =
-      `<span class="material-symbols-outlined text-[13px]">inbox</span> ${total} source${total !== 1 ? 's' : ''}`;
-  }
-
-  /* ── Add AI research card to canvas ───────────── */
-  let canvasCardOffset = 0;
-
-  function panToCard(wx, wy) {
-    const canvasEl = document.getElementById('canvas');
-    ox = canvasEl.offsetWidth  / 2 - (wx + 150) * scale;
-    oy = canvasEl.offsetHeight / 2 - (wy + 100) * scale;
-    lx = ox; ly = oy;
-    world.style.transform = `scale(${scale}) translate(${ox/scale}px, ${oy/scale}px)`;
-  }
-
-  function addCanvasCard(sessionId, title, summary, nodes) {
-    /* Place cards in a grid starting at (80, 80), offset each new card */
-    const col = canvasCardOffset % 3;
-    const row = Math.floor(canvasCardOffset / 3);
-    const wx  = 80  + col * 340;
-    const wy  = 80  + row * 260;
-    canvasCardOffset++;
-
-    const previewTags = (nodes || []).slice(0, 3)
-      .map(n => n.title || n[0] || '').filter(Boolean)
-      .map(t => `<span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-[10px] font-mono border border-outline-variant/20">${escHtml(t)}</span>`)
-      .join('');
-    const nodeCount = (nodes || []).length;
-    const card = document.createElement('div');
-    card.className = 'card-hover absolute bg-surface rounded-xl p-lg w-[300px] shadow-paper border border-outline-variant/20 cursor-pointer hover:shadow-floating';
-    card.style.left = `${wx}px`;
-    card.style.top  = `${wy}px`;
-    card.addEventListener('click', () => openReader(title, sessionId.split('-')[0], sessionId));
-    card.innerHTML = `
-      <div class="flex justify-between items-start mb-md">
-        <span class="bg-primary/10 text-primary px-sm py-xs rounded font-mono text-label-mono uppercase tracking-widest text-[10px]">AI Synthesis</span>
-        <span class="material-symbols-outlined text-outline text-[18px]">more_horiz</span>
-      </div>
-      <h3 class="font-display text-headline-sm mb-sm">${escHtml(title)}</h3>
-      <p class="font-body text-body-md text-on-surface-variant leading-relaxed mb-md" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${escHtml(summary || 'Research synthesis generated from your source.')}</p>
-      <div class="flex gap-xs flex-wrap mb-md">${previewTags}</div>
-      ${nodeCount ? `<div class="flex items-center gap-xs pt-sm border-t border-outline-variant/10">
-        <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1">auto_awesome</span>
-        <span class="font-mono text-[10px] text-on-surface-variant">${nodeCount} insight${nodeCount !== 1 ? 's' : ''} generated</span>
-      </div>` : ''}`;
-    world.appendChild(card);
-    panToCard(wx, wy);
-  }
-
-  /* ── Chat send ─────────────────────────────────── */
-  const FALLBACK_RESPONSES = [
-    "Based on your canvas sources, I see a strong thread of contextual persistence — users retain more when spatial layout mirrors their mental model.",
-    "Interesting tension between your sources: cognitive load theory suggests simplicity, but your spatial interface papers argue that complexity, when navigable, actually helps recall.",
-    "These four sources converge on a single insight: the future of research tools is about making connections visible, not just storing information.",
-    "Your 'Meeting Notes — Synthesis' source is the bridge here. It ties the theoretical frameworks in the academic papers to real workflow patterns.",
-  ];
-  let aiMsgIdx = 0;
-
-  /* ── Unified command bar routing ─────────────── */
   function updateInputMode(val) {
     const hint = document.getElementById('input-mode-hint');
     const icon = document.getElementById('chat-send-icon');
-    if (!hint || !icon) return;
     if (!val.trim()) {
       hint.innerHTML = '<span class="material-symbols-outlined text-[12px]">info</span> URL or topic → research · question → ask AI';
       icon.textContent = 'arrow_forward';
     } else if (isUrl(val.trim())) {
-      hint.innerHTML = '<span class="material-symbols-outlined text-[12px]">link</span> Will import & research this URL';
+      hint.innerHTML = '<span class="material-symbols-outlined text-[12px]">link</span> Will import &amp; research this URL';
       icon.textContent = 'download';
     } else if (!currentSessionId) {
       hint.innerHTML = '<span class="material-symbols-outlined text-[12px]">auto_awesome</span> Will research this topic on the web';
       icon.textContent = 'travel_explore';
     } else {
-      hint.innerHTML = '<span class="material-symbols-outlined text-[12px]">psychology</span> Will ask AI about your canvas';
+      hint.innerHTML = '<span class="material-symbols-outlined text-[12px]">psychology</span> Question → ask AI · <b>/research &lt;topic&gt;</b> → new card';
       icon.textContent = 'arrow_forward';
     }
   }
 
-  async function sendChat() {
-    const input = document.getElementById('chat-input');
-    const msgs  = document.getElementById('chat-messages');
-    const text  = input.value.trim();
-    if (!text) return;
+  function registerSession(id, fields) {
+    sessionCache[id] = { ...(sessionCache[id] || {}), ...fields, id };
+    sessionOrder = [id, ...sessionOrder.filter(x => x !== id)];
+    currentSessionId = id;
+    renderSidebar(document.getElementById('header-search').value);
+    renderCanvasCards();
+    updateContextBadge();
+    const positions = loadPositions();
+    const pos = positions[id] || { x: 80, y: 80 };
+    panToCard(pos.x, pos.y);
+  }
 
-    /* ── Research mode: URL or topic with no active session ── */
-    if (isUrl(text) || !currentSessionId) {
-      /* Show user bubble */
-      const userEl = document.createElement('div');
-      userEl.className = 'flex flex-col gap-xs items-end';
-      userEl.innerHTML = `
-        <div class="bg-[#E8E3DC] p-md rounded-xl rounded-tr-none max-w-[90%] shadow-paper border border-outline-variant/10">
-          <p class="font-body text-body-md text-on-surface">${escHtml(text)}</p>
-        </div>
-        <span class="font-mono text-[10px] text-outline px-xs uppercase tracking-tighter">Researcher</span>`;
-      msgs.appendChild(userEl);
-      input.value = '';
-      updateInputMode('');
-      msgs.scrollTop = msgs.scrollHeight;
+  async function runResearchFlow(text, setStatus) {
+    if (isUrl(text)) {
+      const url = text.startsWith('http') ? text : 'https://' + text;
+      let domain = text;
+      try { domain = new URL(url).hostname.replace('www.', ''); } catch {}
 
-      /* Status typing bubble */
-      const statusEl = makeTypingEl();
-      msgs.appendChild(statusEl);
-      msgs.scrollTop = msgs.scrollHeight;
+      setStatus('Importing source…');
+      const source = await requestJson('/api/sources', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, topic: domain }),
+      });
 
-      const setStatus = msg => {
-        statusEl.innerHTML = `
-          <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1">psychology</span>
-          <span class="font-mono text-[10px] text-on-surface-variant">${escHtml(msg)}</span>`;
-      };
-
-      try {
-        let sessionId, sessionTitle, summary, nodes;
-
-        if (isUrl(text)) {
-          const url = text.startsWith('http') ? text : 'https://' + text;
-          let domain = text;
-          try { domain = new URL(url).hostname.replace('www.', ''); } catch {}
-
-          setStatus('Importing source…');
-          const source = await requestJson('/api/sources', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url, topic: domain }),
-          });
-
-          if (source.status === 'pending' && source.job_id) {
-            setStatus('Transcribing…');
-            const job = await pollJob(source.job_id, msg => setStatus(msg));
-            if (job.status === 'failed' || !job.chunks_count)
-              throw new Error(job.error || job.warnings?.[0] || 'Could not extract transcript.');
-          }
-
-          setStatus('Synthesizing…');
-          const result = await requestJson(`/api/sessions/${source.session_id}/generate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic: domain, depth: 'Basic', output: 'Mindmap' }),
-          });
-
-          sessionId    = source.session_id;
-          sessionTitle = result.topic || result.root || domain;
-          summary      = result.summary || '';
-          nodes        = result.nodes   || [];
-          sessions[sessionId] = { title: sessionTitle, domain, summary, nodes,
-            sources: [...(result.sources || []), ...(result.citations || [])] };
-
-          /* Sidebar card */
-          const isYT = /youtu/.test(url);
-          addSidebarCard(sessionTitle, domain, sessionId, isYT ? 'video' : 'web', isYT ? 'play_circle' : 'public', 'text-primary', 'bg-primary/10');
-
-        } else {
-          setStatus('Researching on the web…');
-          const result = await requestJson('/api/research', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: text, depth: 'Basic', output: 'Mindmap', source: 'Web' }),
-          });
-
-          sessionId    = result.session_id;
-          sessionTitle = result.topic || result.root || text;
-          summary      = result.summary || '';
-          nodes        = result.nodes   || [];
-          sessions[sessionId] = { title: sessionTitle, domain: text, summary, nodes,
-            sources: [...(result.sources || []), ...(result.citations || [])] };
-
-          /* Sidebar card */
-          addSidebarCard(sessionTitle, 'AI Research', sessionId, 'web', 'auto_awesome', 'text-secondary', 'bg-secondary/10');
-        }
-
-        currentSessionId = sessionId;
-        updateContextBadge();
-        addCanvasCard(sessionId, sessionTitle, summary, nodes);
-        statusEl.remove();
-
-        /* Success message in chat */
-        const nodeCount = (nodes || []).length;
-        msgs.appendChild(makeAiMsgEl(
-          `Research complete on <b>${escHtml(sessionTitle)}</b>. I found ${nodeCount} insight${nodeCount !== 1 ? 's' : ''} and added a card to your canvas.` +
-          `<div class="mt-md p-md bg-white/40 border-l-4 border-secondary rounded-r-lg">` +
-          `<p class="font-body text-body-sm italic text-on-surface">${escHtml((summary || '').slice(0, 200))}${summary && summary.length > 200 ? '…' : ''}</p></div>`
-        ));
-
-      } catch (err) {
-        statusEl.remove();
-        const isAuth = /401|auth|sign.?in|unauthori/i.test(err.message);
-        msgs.appendChild(makeAiMsgEl(
-          isAuth
-            ? '🔒 You need to be signed in. <a href="/" class="text-primary underline font-semibold">Sign in on the classic app</a> then come back — your session will carry over.'
-            : `<span class="text-[#ba1a1a]">⚠ ${escHtml(err.message)}</span>`
-        ));
+      if (source.status === 'pending' && source.job_id) {
+        setStatus('Transcribing…');
+        const job = await pollJob(source.job_id, setStatus);
+        if (job.status === 'failed' || !job.chunks_count)
+          throw new Error(job.error || (job.warnings && job.warnings[0]) || 'Could not extract a transcript from this video.');
+      } else if (!source.chunks_count) {
+        throw new Error((source.warnings && source.warnings[0]) || 'No readable text found at that URL.');
       }
 
-      msgs.scrollTop = msgs.scrollHeight;
+      setStatus('Synthesizing…');
+      const result = await requestJson(`/api/sessions/${source.session_id}/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: domain, depth: 'Detailed', output: 'Mindmap' }),
+      });
+      return { id: source.session_id, result };
+    }
+
+    setStatus('Researching on the web…');
+    const result = await requestJson('/api/research', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: text, depth: 'Detailed', output: 'Mindmap', source: 'Academic + web' }),
+    });
+    // /api/research returns the session id in `id` (was the beta's missing-card bug)
+    return { id: result.id || result.session_id, result };
+  }
+
+  async function sendChat() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    if (!isSignedIn()) {
+      addUserMessage(text);
+      input.value = '';
+      const el = addAiMessage('🔒 You need to be signed in to research. ');
+      const btn = document.createElement('button');
+      btn.className = 'mt-sm bg-primary text-on-primary px-md py-xs rounded-full font-mono text-label-mono shadow-paper';
+      btn.textContent = 'Sign in';
+      btn.addEventListener('click', openSignIn);
+      el.querySelector('div:last-child').appendChild(btn);
       return;
     }
 
-    /* ── Q&A mode: question with active session ── */
-    const userEl = document.createElement('div');
-    userEl.className = 'flex flex-col gap-xs items-end';
-    userEl.innerHTML = `
-      <div class="bg-[#E8E3DC] p-md rounded-xl rounded-tr-none max-w-[90%] shadow-paper border border-outline-variant/10">
-        <p class="font-body text-body-md text-on-surface">${escHtml(text)}</p>
-      </div>
-      <span class="font-mono text-[10px] text-outline px-xs uppercase tracking-tighter">Researcher</span>`;
-    msgs.appendChild(userEl);
+    const slashResearch = text.toLowerCase().startsWith('/research ');
+    const query = slashResearch ? text.slice(10).trim() : text;
+    const treatAsResearch = slashResearch || isUrl(query) || !currentSessionId;
+
+    addUserMessage(text);
     input.value = '';
     updateInputMode('');
-    msgs.scrollTop = msgs.scrollHeight;
 
-    const typingEl = makeTypingEl();
-    msgs.appendChild(typingEl);
+    const statusEl = makeTypingEl();
+    msgs.appendChild(statusEl);
     msgs.scrollTop = msgs.scrollHeight;
+    const setStatus = msg => {
+      statusEl.innerHTML = `
+        <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1">psychology</span>
+        <span class="font-mono text-[10px] text-on-surface-variant">${escHtml(msg)}</span>`;
+    };
 
+    if (treatAsResearch) {
+      try {
+        const flow = await runResearchFlow(query, setStatus);
+        statusEl.remove();
+        if (!flow.id) throw new Error('Backend did not return a session id.');
+        const result = flow.result;
+        registerSession(flow.id, {
+          topic: result.topic || result.root || query,
+          summary: result.summary || '',
+          nodes: result.nodes || [],
+          sources: [...(result.sources || []), ...(result.citations || [])],
+          depth: result.depth || 'Detailed',
+          created_at: new Date().toISOString(),
+          detailLoaded: true,
+        });
+        const nodeCount = (result.nodes || []).length;
+        addAiMessage(
+          `Research complete on <b>${escHtml(result.topic || query)}</b> — ${nodeCount} concept${nodeCount !== 1 ? 's' : ''} mapped. The card is on your canvas; click it to read, or ask me a question about it.` +
+          ((result.warnings || []).length ? `<div class="mt-sm font-mono text-[10px] text-outline">⚠ ${escHtml(result.warnings[0])}</div>` : '')
+        );
+      } catch (err) {
+        statusEl.remove();
+        handleChatError(err);
+      }
+      return;
+    }
+
+    /* Q&A against active session */
     try {
       const data = await requestJson(`/api/sessions/${currentSessionId}/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: text }),
+        body: JSON.stringify({ question: query }),
       });
-      typingEl.remove();
+      statusEl.remove();
       let citationsHtml = '';
-      if (data.citations?.length) {
+      if (data.citations && data.citations.length) {
         citationsHtml = `<div class="flex gap-xs flex-wrap mt-xs">` +
           data.citations.slice(0, 3).map(c =>
             c.url
@@ -1131,17 +923,28 @@
               : `<span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">${escHtml(c.title || '')}</span>`
           ).join('') + '</div>';
       }
-      msgs.appendChild(makeAiMsgEl(escHtml(data.answer || 'No answer returned.'), citationsHtml));
+      addAiMessage(escHtml(data.answer || 'No answer returned.'), citationsHtml);
     } catch (err) {
-      typingEl.remove();
-      const isAuth = /401|auth|sign.?in|unauthori/i.test(err.message);
-      msgs.appendChild(makeAiMsgEl(
-        isAuth
-          ? '🔒 Session expired. <a href="/" class="text-primary underline font-semibold">Sign in again</a> and return to Canvas.'
-          : `<span class="text-[#ba1a1a]">⚠ ${escHtml(err.message)}</span>`
-      ));
+      statusEl.remove();
+      handleChatError(err);
     }
-    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function handleChatError(err) {
+    if (err.status === 401) {
+      const el = addAiMessage('🔒 Your session expired. ');
+      const btn = document.createElement('button');
+      btn.className = 'mt-sm bg-primary text-on-primary px-md py-xs rounded-full font-mono text-label-mono shadow-paper';
+      btn.textContent = 'Sign in again';
+      btn.addEventListener('click', openSignIn);
+      el.querySelector('div:last-child').appendChild(btn);
+      return;
+    }
+    if (err.status === 429) {
+      addAiMessage(`⏳ ${escHtml(err.message)}`);
+      return;
+    }
+    addAiMessage(`<span class="text-[#ba1a1a]">⚠ ${escHtml(err.message)}</span>`);
   }
 
   document.getElementById('chat-send').addEventListener('click', sendChat);
@@ -1150,30 +953,113 @@
   });
   document.getElementById('chat-input').addEventListener('input', e => updateInputMode(e.target.value));
 
-  /* ── Search ────────────────────────────────────── */
-  function filterSources(query) {
-    const q = query.toLowerCase().trim();
-    document.querySelectorAll('#source-list [data-source-type]').forEach(card => {
-      const title  = card.querySelector('h4')?.textContent?.toLowerCase() || '';
-      const domain = card.querySelector('.font-mono')?.textContent?.toLowerCase() || '';
-      card.style.display = (!q || title.includes(q) || domain.includes(q)) ? '' : 'none';
-    });
+  /* ── File upload ───────────────────────────── */
+  const fileInput = document.getElementById('file-input');
+  document.getElementById('upload-btn').addEventListener('click', () => {
+    if (!isSignedIn()) { openSignIn(); return; }
+    fileInput.click();
+  });
+  document.getElementById('attach-btn').addEventListener('click', () => {
+    if (!isSignedIn()) { openSignIn(); return; }
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    fileInput.value = '';
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      addAiMessage(`<span class="text-[#ba1a1a]">⚠ ${escHtml(file.name)} is ${(file.size/1024/1024).toFixed(1)} MB — uploads are capped at 8 MB.</span>`);
+      return;
+    }
+    addUserMessage(`📎 ${file.name}`);
+    const statusEl = makeTypingEl();
+    msgs.appendChild(statusEl);
+    const setStatus = msg => {
+      statusEl.innerHTML = `
+        <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1">psychology</span>
+        <span class="font-mono text-[10px] text-on-surface-variant">${escHtml(msg)}</span>`;
+    };
+    try {
+      setStatus('Uploading…');
+      const token = await getAuthToken();
+      const res = await fetch(`${API_BASE}/api/sources`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+          'X-Filename': file.name,
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: await file.arrayBuffer(),
+      });
+      const source = await res.json().catch(() => ({}));
+      if (!res.ok) { const e = new Error(source.detail || 'Upload failed'); e.status = res.status; throw e; }
+      if (!source.chunks_count) throw new Error((source.warnings && source.warnings[0]) || 'No readable text in this file.');
+
+      setStatus('Synthesizing…');
+      const result = await requestJson(`/api/sessions/${source.session_id}/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: file.name, depth: 'Detailed', output: 'Mindmap' }),
+      });
+      statusEl.remove();
+      registerSession(source.session_id, {
+        topic: result.topic || file.name,
+        summary: result.summary || '',
+        nodes: result.nodes || [],
+        sources: [...(result.sources || []), ...(result.citations || [])],
+        depth: result.depth || 'Detailed',
+        created_at: new Date().toISOString(),
+        detailLoaded: true,
+      });
+      addAiMessage(`Imported <b>${escHtml(file.name)}</b> and mapped it — the card is on your canvas.`);
+    } catch (err) {
+      statusEl.remove();
+      handleChatError(err);
+    }
+  });
+
+  /* ── Search ────────────────────────────────── */
+  document.getElementById('header-search').addEventListener('input', e => renderSidebar(e.target.value));
+
+  /* ── Boot ──────────────────────────────────── */
+  let booted = false;
+  async function bootData() {
+    if (!isSignedIn()) { renderSidebar(); renderCanvasCards(); updateContextBadge(); return; }
+    if (booted) return;
+    booted = true;
+    try {
+      const data = await requestJson('/api/sessions');
+      (data.sessions || []).forEach(s => {
+        sessionCache[s.id] = { ...s, detailLoaded: false };
+      });
+      sessionOrder = (data.sessions || []).map(s => s.id);
+      currentSessionId = sessionOrder[0] || null;
+    } catch (err) {
+      console.error('Failed to load sessions:', err);
+      addAiMessage(`<span class="text-[#ba1a1a]">⚠ Could not load your research library: ${escHtml(err.message)}</span>`);
+    }
+    renderSidebar();
+    renderCanvasCards();
+    updateContextBadge();
+    if (sessionOrder.length) {
+      addAiMessage(`Welcome back — ${sessionOrder.length} research session${sessionOrder.length !== 1 ? 's' : ''} loaded. Click a card to read it, ask a question about the active one, or paste a URL to start something new.`);
+    } else {
+      addAiMessage(`This canvas turns research into cards you can arrange spatially. Paste a URL, type a topic, or upload a TXT/PDF below to create your first one.`);
+    }
   }
 
-  /* Header search */
-  document.querySelector('input[placeholder="Search insights…"]')
-    .addEventListener('input', e => filterSources(e.target.value));
+  (async () => {
+    await clerkReady;
+    bootData();
+  })();
 
-  /* ── Responsive: auto-hide panels on narrow viewports ─── */
+  /* ── Responsive ────────────────────────────── */
   function applyResponsiveLayout() {
     const vw = window.innerWidth;
-    if (vw < 700) {
-      hideSidebar(); hideChatPanel();
-    } else if (vw < 1000) {
-      hideChatPanel(); showSidebar();
-    } else {
-      showSidebar(); showChatPanel();
-    }
+    if (vw < 700) { hideSidebar(); hideChatPanel(); }
+    else if (vw < 1000) { hideChatPanel(); showSidebar(); }
+    else { showSidebar(); showChatPanel(); }
   }
   applyResponsiveLayout();
   window.addEventListener('resize', applyResponsiveLayout);

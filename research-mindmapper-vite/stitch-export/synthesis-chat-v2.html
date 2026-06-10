@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&amp;family=Epilogue:wght@400;600&amp;family=JetBrains+Mono&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#dfbfba",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#cec5ba",
+                        "on-tertiary-fixed-variant": "#4b463e",
+                        "primary-fixed": "#ffdad4",
+                        "inverse-surface": "#32302e",
+                        "surface-bright": "#fef8f5",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#58413e",
+                        "surface-tint": "#a93627",
+                        "primary-fixed-dim": "#ffb4a8",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#ede7e4",
+                        "on-primary-fixed": "#410100",
+                        "on-surface": "#1d1b19",
+                        "surface-container-low": "#f8f2ef",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e7e1de",
+                        "surface": "#fef8f5",
+                        "surface-dim": "#ded9d6",
+                        "background": "#fef8f5",
+                        "on-primary-fixed-variant": "#881e12",
+                        "tertiary": "#615b52",
+                        "secondary": "#006d3e",
+                        "on-primary-container": "#fffbff",
+                        "inverse-primary": "#ffb4a8",
+                        "on-secondary-fixed-variant": "#00522d",
+                        "secondary-fixed-dim": "#7dd99e",
+                        "tertiary-fixed": "#eae1d5",
+                        "surface-variant": "#e7e1de",
+                        "secondary-container": "#96f3b6",
+                        "surface-container": "#f3ede9",
+                        "primary-container": "#c74c3a",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#007241",
+                        "on-secondary-fixed": "#00210f",
+                        "secondary-fixed": "#99f6b8",
+                        "error": "#ba1a1a",
+                        "outline": "#8c716d",
+                        "primary": "#a63425",
+                        "on-tertiary-fixed": "#1f1b14",
+                        "on-tertiary-container": "#fffbff",
+                        "inverse-on-surface": "#f5f0ec",
+                        "on-background": "#1d1b19",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#7a746a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "24px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "card-gap": "20px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "canvas-margin": "32px",
+                        "md": "16px",
+                        "unit": "4px",
+                        "xl": "48px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Fraunces"],
+                        "body-lg": ["Epilogue"],
+                        "label-mono": ["JetBrains Mono"],
+                        "body-sm": ["Epilogue"],
+                        "display-lg": ["Fraunces"],
+                        "body-md": ["Epilogue"],
+                        "headline-sm": ["Fraunces"],
+                        "button": ["Epilogue"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "button": ["15px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+                    },
+                    "boxShadow": {
+                        "paper": "0px 2px 4px rgba(42, 40, 38, 0.05), 0px 1px 2px rgba(42, 40, 38, 0.1)",
+                        "floating": "0px 12px 32px rgba(42, 40, 38, 0.12), 0px 4px 8px rgba(42, 40, 38, 0.06)"
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .canvas-bg {
+            background-image: radial-gradient(#dfbfba 0.5px, transparent 0.5px);
+            background-size: 24px 24px;
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #dfbfba; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md canvas-bg min-h-screen overflow-hidden">
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-lg py-sm bg-surface/90 backdrop-blur-md border-b border-outline-variant/20 shadow-floating">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-bold text-primary">Aletheia Canvas</span>
+<nav class="hidden md:flex ml-xl gap-lg">
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-body-md text-body-md" href="#">Workspace</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-body-md text-body-md" href="#">Threads</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-body-md text-body-md" href="#">Library</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-body-md text-body-md" href="#">Timeline</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-xl pr-md py-xs bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary text-body-sm w-64" placeholder="Search insights..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary px-lg py-xs rounded-full font-button text-button shadow-paper hover:shadow-floating transition-all active:scale-95">Share</button>
+</div>
+</header>
+<aside class="fixed left-0 top-0 h-full flex flex-col pt-24 pb-8 z-40 bg-surface-container-low border-r border-outline-variant/30 shadow-paper w-[300px] rounded-r-xl">
+<div class="px-lg mb-lg">
+<div class="flex items-center gap-sm mb-xs">
+<div class="w-10 h-10 rounded-full bg-surface-dim flex items-center justify-center overflow-hidden border border-outline-variant">
+<img alt="Researcher Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbH6DcOHHrS9tS90L-Eww5pxo3jiX9BeLjLR_3TKsrdPEnXFr3pNf9z4J3WLM00KqcMgvif9Snx6s2-S-XVwozQxSLI1qhngll9DgJ4eK0Ra4pd3mVf-VNXvrvydE3LN06bMb7VXQCtl6XHr17U5vjDFyvRj38H9H5iw9Kqyhbgb-8yHkCNXzvxpkgM3lPonFasrhWc7SlG59IhhpLFq-F5U1A6wQZnwhwewD8WF_HlodF9LHgg5vDe4QPqaHKBDdqqrbZyXxdZ_0"/>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-primary leading-tight">Sources</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant opacity-70">Active Workspace</p>
+</div>
+</div>
+<button class="w-full mt-md bg-surface-container-highest hover:bg-surface-container-high text-primary border border-primary/20 py-sm rounded-lg flex items-center justify-center gap-xs font-button transition-all">
+<span class="material-symbols-outlined">add</span> Import File
+            </button>
+</div>
+<nav class="flex-1 px-md space-y-xs overflow-y-auto">
+<a class="flex items-center gap-md p-md bg-primary-container text-on-primary-container rounded-lg font-bold transition-all translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="book_5">book_5</span>
+<span class="font-label-mono text-label-mono">Sources</span>
+</a>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="database">database</span>
+<span class="font-label-mono text-label-mono">Library</span>
+</a>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-mono text-label-mono">Recent</span>
+</a>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="grade">grade</span>
+<span class="font-label-mono text-label-mono">Starred</span>
+</a>
+</nav>
+</aside>
+<main class="fixed inset-0 ml-[300px] mr-[360px] pt-24 p-canvas-margin overflow-auto">
+<div class="relative w-full h-full">
+<div class="absolute top-10 left-10 w-96 bg-surface p-lg rounded-xl shadow-paper border border-outline-variant/20 hover:shadow-floating transition-shadow">
+<div class="flex justify-between items-center mb-md">
+<span class="bg-tertiary-container/10 text-on-tertiary-fixed-variant px-sm py-xs rounded font-label-mono text-xs uppercase tracking-widest">Primary Thesis</span>
+<span class="material-symbols-outlined text-outline">more_horiz</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-sm">The Vellum Manuscript</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Preliminary findings suggest that the tactile nature of analog media increases memory retention compared to backlit digital screens.</p>
+<div class="flex gap-xs">
+<span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-xs font-label-mono">#analog</span>
+<span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded-md text-xs font-label-mono">#study_A1</span>
+</div>
+</div>
+<svg class="absolute top-[160px] left-[400px] w-64 h-40 pointer-events-none">
+<path d="M 0 0 C 100 0, 100 150, 250 150" fill="transparent" opacity="0.4" stroke="#8c716d" stroke-dasharray="8 4" stroke-width="2"></path>
+</svg>
+<div class="absolute top-[280px] left-[650px] w-80 bg-surface p-lg rounded-xl shadow-paper border border-outline-variant/20 hover:shadow-floating transition-shadow">
+<div class="flex justify-between items-center mb-md">
+<span class="bg-secondary-container/20 text-on-secondary-fixed-variant px-sm py-xs rounded font-label-mono text-xs uppercase tracking-widest">Supporting Evidence</span>
+<span class="material-symbols-outlined text-outline">attachment</span>
+</div>
+<div class="aspect-video bg-surface-container mb-md rounded overflow-hidden">
+<img class="w-full h-full object-cover grayscale opacity-80" data-alt="A macro photograph showing the rich texture of high-quality vellum paper with faint ink strokes. The lighting is warm and directional, highlighting the organic fibers of the material. The image has a calm, scholarly atmosphere with a shallow depth of field focusing on the ink details against a soft, creamy background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEpZlDR46iIxQVL6fmWffgzuCjhVHCHnN4Ykqj3LTTSQSXdHGT8tnQh0lzMvCXF1bfbdLIZFiVilmOLA0tXCBzroSbwYRCyZK0DkUAaS27kJK2pt4JMBp_1Z_vU57WuNxO6IkjJPX1WszrswLjm1Qa9W8Z117tTuoqGesNnaOVmn20pCDYk03UWrUx9Mh5x8uzT8HePQMUmaVklD3AvHr-nbs1CYnVnMw4jre8ZrC-5eseuHaZ4RwcxxnQB0mhprh2w5lrF8omPMc"/>
+</div>
+<h4 class="font-body-md font-bold mb-xs">Fiber Analysis Report</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Texture depth measured at 0.4mm, providing significant haptic feedback during transcription.</p>
+</div>
+</div>
+</main>
+<aside class="fixed right-0 top-0 h-full flex flex-col pt-24 z-40 bg-surface-container-low border-l border-outline-variant/30 shadow-paper w-[360px] rounded-tl-2xl rounded-bl-2xl">
+<div class="flex-none p-lg border-b border-outline-variant/10">
+<div class="flex items-center justify-between mb-md">
+<h2 class="font-headline-sm text-headline-sm text-secondary">Synthesis Chat</h2>
+<div class="bg-surface-container-highest px-md py-xs rounded-full border border-outline-variant/20 flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-label-mono text-label-mono text-on-surface-variant">Context: 4 Cards</span>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-surface-dim flex items-center justify-center text-[10px] font-bold">SM</div>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">psychology</span>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant leading-tight">Analyzing connections between <b>The Vellum Manuscript</b> and <b>Fiber Analysis</b>.</p>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto px-lg py-md space-y-xl">
+<div class="flex flex-col gap-sm">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="font-label-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">AI Synthesis Assistant</span>
+</div>
+<div class="font-body-md text-on-surface-variant leading-relaxed">
+                    Based on your active research cards, I've identified a strong correlation between the haptic feedback of fiber depth (0.4mm) and the cognitive load reduction mentioned in your primary thesis. Would you like me to draft a summary of this synthesis?
+                </div>
+</div>
+<div class="flex flex-col gap-sm items-end">
+<div class="bg-[#E8E3DC] p-md rounded-xl rounded-tr-none max-w-[90%] shadow-paper border border-outline-variant/10">
+<p class="font-body-md text-on-surface">Yes, please focus on the "tactile minimalism" aspect and how it relates to digital fatigue.</p>
+</div>
+<span class="font-label-mono text-[10px] text-outline px-xs uppercase tracking-tighter">Researcher</span>
+</div>
+<div class="flex flex-col gap-sm">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="font-label-mono text-[10px] uppercase tracking-tighter text-on-surface-variant">AI Synthesis Assistant</span>
+</div>
+<div class="font-body-md text-on-surface-variant leading-relaxed">
+                    Understood. Processing synthesis...
+                    <div class="mt-md p-md bg-white/40 border-l-4 border-secondary rounded-r-lg">
+<p class="font-body-sm italic">"The intersection of physical material properties and neural processing suggest that 'Tactile Minimalism' serves as a cognitive buffer..."</p>
+</div>
+</div>
+</div>
+</div>
+<div class="flex-none p-lg bg-surface/40 backdrop-blur-sm border-t border-outline-variant/10">
+<div class="relative">
+<textarea class="w-full bg-[#f8f2ef] border border-outline-variant/20 rounded-xl px-md py-md pr-16 focus:ring-2 focus:ring-primary focus:border-transparent text-body-md resize-none shadow-inner" placeholder="Type a command or question..." rows="1"></textarea>
+<button class="absolute right-xs top-1/2 -translate-y-1/2 bg-primary text-on-primary w-10 h-10 rounded-lg flex items-center justify-center shadow-paper hover:shadow-floating transition-all active:scale-95 group">
+<span class="material-symbols-outlined group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+<div class="flex justify-between items-center mt-md">
+<div class="flex gap-md">
+<button class="text-on-surface-variant/60 hover:text-primary flex items-center gap-xs transition-colors">
+<span class="material-symbols-outlined text-lg">attach_file</span>
+</button>
+<button class="text-on-surface-variant/60 hover:text-primary flex items-center gap-xs transition-colors">
+<span class="material-symbols-outlined text-lg">mic</span>
+</button>
+</div>
+<div class="flex gap-sm">
+<button class="text-on-surface-variant hover:bg-surface-container-high p-xs rounded transition-all">
+<span class="material-symbols-outlined text-lg">settings</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high p-xs rounded transition-all">
+<span class="material-symbols-outlined text-lg">help</span>
+</button>
+</div>
+</div>
+</div>
+</aside>
+</body></html>

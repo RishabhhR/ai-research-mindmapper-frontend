@@ -352,16 +352,19 @@ function normalizeResearch(data) {
     topic: data.topic || elements.topic.value,
     depth: data.depth || elements.depth.value,
     output: data.output || elements.output.value,
-    quality: Math.min(96, 76 + nodes.length * 3 + (data.citations?.length || 0)),
     root: data.root || data.topic || "Research map",
     rootX: data.rootX || 40,
     rootY: data.rootY || 39,
     summary: data.summary || "No summary returned.",
     nodes: nodes.map((node, index) => {
+      // Honor stored/LLM positions; fall back to a circle layout only when
+      // a node arrives without coordinates.
       const count = Math.max(1, nodes.length);
       const angle = (index / count) * Math.PI * 2 - Math.PI / 2;
-      const x = 39 + 32 * Math.cos(angle);
-      const y = 44 + 32 * Math.sin(angle);
+      const fallbackX = 39 + 32 * Math.cos(angle);
+      const fallbackY = 44 + 32 * Math.sin(angle);
+      const x = clampPct(node.x, fallbackX);
+      const y = clampPct(node.y, fallbackY);
       return [
         node.title || `Node ${index + 1}`,
         node.description || node.body || "",
@@ -375,6 +378,12 @@ function normalizeResearch(data) {
     tradeoffs: normalizeCards(data.tradeoffs),
     createdAt: new Date().toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
   };
+}
+
+function clampPct(value, fallback) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(0, Math.min(92, n));
 }
 
 function normalizeCards(cards = []) {
@@ -807,7 +816,9 @@ _modal.expand.addEventListener("click", () => {
 });
 
 function renderInsights(research) {
-  elements.quality.textContent = research.quality;
+  // Honest metric: number of insights, not an invented "quality score".
+  elements.quality.textContent = research.insights.length;
+  elements.quality.title = `${research.insights.length} key insight${research.insights.length === 1 ? "" : "s"}`;
   elements.insights.innerHTML = research.insights.length
     ? research.insights.map(([title, body, provenance]) => `<article class="insight-card"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(body)}</p>${badge(provenance)}</article>`).join("")
     : '<article class="insight-card"><h3>No insights yet</h3><p>Run a research query or ingest a source.</p></article>';
@@ -851,34 +862,13 @@ function formatTopic(topic) {
   return topic;
 }
 
-async function migrateLocalStorage() {
-  const localHistory = JSON.parse(localStorage.getItem("researchHistory") || "[]");
-  if (!localHistory.length) return;
-
-  showToast("Syncing local maps to cloud...");
-  for (const item of localHistory) {
-    try {
-      // Create session on Turso
-      const session = await requestJson("/api/research", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: item.topic,
-          depth: item.depth || "Detailed",
-          output: item.output || "Mindmap",
-          source: "local_migration"
-        }),
-      });
-      // The backend /api/research already saves it, but we might want to preserve the old content?
-      // For now, simple re-generation or just noting it's synced is better than complex partial sync.
-      console.log(`Migrated topic: ${item.topic}`);
-    } catch (err) {
-      console.error("Migration failed for topic:", item.topic, err);
-    }
-  }
-  localStorage.removeItem("researchHistory");
-  showToast("Migration complete");
-  await loadHistory();
+// Pre-cloud versions kept maps in localStorage. The old "migration" silently
+// re-ran every topic through the LLM (slow, quota-burning, and it didn't
+// actually preserve the old content) — so now we just clear the stale key.
+function cleanupLegacyLocalStorage() {
+  try {
+    localStorage.removeItem("researchHistory");
+  } catch { /* private browsing */ }
 }
 
 async function loadHistory() {
@@ -899,15 +889,17 @@ function renderHistory() {
 
   elements.history.innerHTML = state.history
     .map((item) => `
-      <button class="history-card" type="button" data-id="${escapeAttr(item.id)}" title="${escapeAttr(item.topic)}">
+      <div class="history-card" data-id="${escapeAttr(item.id)}" title="${escapeAttr(item.topic)}" role="button" tabindex="0">
         <strong>${escapeHtml(formatTopic(item.topic))}</strong>
         <span>${escapeHtml(formatSessionDate(item.created_at || item.createdAt))} · ${escapeHtml(item.depth)}</span>
-      </button>
+        <button class="history-delete" type="button" data-delete="${escapeAttr(item.id)}" aria-label="Delete this map" title="Delete">✕</button>
+      </div>
     `)
     .join("");
 
   elements.history.querySelectorAll(".history-card[data-id]").forEach((card) => {
-    card.addEventListener("click", async () => {
+    card.addEventListener("click", async (e) => {
+      if (e.target.closest(".history-delete")) return;
       const id = card.dataset.id;
       try {
         setLoading("Loading map...");
@@ -916,15 +908,33 @@ function renderHistory() {
           ...data.session,
           session_id: data.session.id,
           nodes: data.session.mindmap || [],
-          sources: data.sources || [],
+          // Merge stored web citations into the sources list so reloaded
+          // maps keep their evidence stack.
+          sources: [...(data.sources || []), ...(data.session.citations || [])],
         };
         loadResearch(normalizeResearch(sessionRaw), false);
         clearLoading();
-        showToast("Map loaded from database");
+        showToast("Map loaded");
       } catch (err) {
         clearLoading();
         console.error("Failed to load session:", err);
         showToast("Error loading session data");
+      }
+    });
+  });
+
+  elements.history.querySelectorAll(".history-delete").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.delete;
+      if (!confirm("Delete this research map permanently?")) return;
+      try {
+        await requestJson(`/api/sessions/${id}`, { method: "DELETE" });
+        state.history = state.history.filter((item) => String(item.id) !== String(id));
+        renderHistory();
+        showToast("Map deleted");
+      } catch (err) {
+        showToast(err.message);
       }
     });
   });
@@ -1331,11 +1341,21 @@ elements.form.addEventListener("submit", runResearch);
 elements.qaForm.addEventListener("submit", askQuestion);
 elements.save.addEventListener("click", () => saveCurrentResearch(true));
 elements.copy.addEventListener("click", copySummary);
-elements.clearHistory.addEventListener("click", () => {
-  // Clearing history in the UI only for now, or could call a DELETE endpoint if implemented
-  state.history = [];
-  renderHistory();
-  showToast("History view cleared (database remains on Turso)");
+elements.clearHistory.addEventListener("click", async () => {
+  if (!state.history.length) return;
+  if (!confirm(`Delete all ${state.history.length} saved maps permanently?`)) return;
+  const ids = state.history.map((item) => item.id).filter(Boolean);
+  let failed = 0;
+  showToast("Deleting maps…");
+  for (const id of ids) {
+    try {
+      await requestJson(`/api/sessions/${id}`, { method: "DELETE" });
+    } catch {
+      failed += 1;
+    }
+  }
+  await loadHistory();
+  showToast(failed ? `Deleted with ${failed} error(s)` : "All maps deleted");
 });
 
 elements.modeTabs.forEach((tab) => tab.addEventListener("click", () => setMode(tab.dataset.mode)));
@@ -1457,7 +1477,7 @@ async function initAuth() {
 
     if (clerk.user) {
       mountUserBtn();
-      await migrateLocalStorage();
+      cleanupLegacyLocalStorage();
       await loadHistory();
     } else {
       renderSignInBtn();
@@ -1473,7 +1493,7 @@ async function initAuth() {
     });
   } catch (err) {
     console.error("Clerk init error:", err);
-    await migrateLocalStorage();
+    cleanupLegacyLocalStorage();
     await loadHistory();
   }
 }
@@ -1485,7 +1505,6 @@ loadResearch({
   topic: "How can AI agents improve product research workflows?",
   depth: "Detailed",
   output: "Mindmap",
-  quality: 86,
   root: "AI Research Mindmapper",
   summary: "Submit a search query, URL, YouTube link, or TXT/PDF file to generate a cited research map.",
   nodes: [

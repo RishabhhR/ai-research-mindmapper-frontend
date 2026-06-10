@@ -1,33 +1,36 @@
-# AI Research Mindmapper Frontend
+# AI Research Mindmapper — Frontend
 
-Standalone frontend inspired by the Stitch `AI Research Mindmapper` design.
+Two surfaces, one backend (`https://mindmapper-api-mu.vercel.app`):
 
-## Open
-
-Open `index.html` directly in a browser:
-
-```text
-/Users/rishabhraj/Antigravity Projects/ai-research-mindmapper-frontend/index.html
+```
+research-mindmapper-vite/        ← the deployed app (Vite + vanilla JS + Clerk)
+  index.html / app.js / styles.css   Classic view: mindmap, insights, sources, Q&A
+  public/canvas.html                 Aletheia Canvas (beta): spatial cards + synthesis chat
+  api/yt-transcript.js               Vercel edge function (YouTube transcript proxy)
+  stitch-export/                     Stitch design references (v1 + v2)
+stitch_screens/                  Original Stitch design exports (PNG + HTML)
+legacy/                          Pre-Vite standalone prototype (kept for reference)
 ```
 
-## Optional Local Server
+## Develop
 
 ```bash
-python3 -m http.server 4173
+cd research-mindmapper-vite
+npm install
+npm run dev        # http://localhost:5173  (canvas at /canvas.html)
 ```
 
-Then visit:
+`.env` needs `VITE_CLERK_PUBLISHABLE_KEY` (see Clerk dashboard).
 
-```text
-http://localhost:4173
+## Build / deploy
+
+```bash
+npm run build      # outputs dist/ — deployed via Vercel
 ```
 
-## Backend
+## Canvas beta notes
 
-This frontend calls the local FastAPI backend at:
-
-```text
-http://127.0.0.1:8008
-```
-
-Set `GROQ_API_KEY` before starting the backend to enable live Groq Compound search and synthesis. Without it, the app returns local fallback responses so the UI remains testable.
+- Sessions are shared with the classic app (same backend + auth).
+- Card positions persist per-browser in localStorage.
+- Tailwind is loaded via CDN in `canvas.html` only — known beta debt,
+  swap for a compiled build before calling Canvas stable.

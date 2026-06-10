@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;600;700&amp;family=Epilogue:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#dfbfba",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#cec5ba",
+                        "on-tertiary-fixed-variant": "#4b463e",
+                        "primary-fixed": "#ffdad4",
+                        "inverse-surface": "#32302e",
+                        "surface-bright": "#fef8f5",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#58413e",
+                        "surface-tint": "#a93627",
+                        "primary-fixed-dim": "#ffb4a8",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#ede7e4",
+                        "on-primary-fixed": "#410100",
+                        "on-surface": "#1d1b19",
+                        "surface-container-low": "#f8f2ef",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e7e1de",
+                        "surface": "#fef8f5",
+                        "surface-dim": "#ded9d6",
+                        "background": "#fef8f5",
+                        "on-primary-fixed-variant": "#881e12",
+                        "tertiary": "#615b52",
+                        "secondary": "#006d3e",
+                        "on-primary-container": "#fffbff",
+                        "inverse-primary": "#ffb4a8",
+                        "on-secondary-fixed-variant": "#00522d",
+                        "secondary-fixed-dim": "#7dd99e",
+                        "tertiary-fixed": "#eae1d5",
+                        "surface-variant": "#e7e1de",
+                        "secondary-container": "#96f3b6",
+                        "surface-container": "#f3ede9",
+                        "primary-container": "#c74c3a",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#007241",
+                        "on-secondary-fixed": "#00210f",
+                        "secondary-fixed": "#99f6b8",
+                        "error": "#ba1a1a",
+                        "outline": "#8c716d",
+                        "primary": "#a63425",
+                        "on-tertiary-fixed": "#1f1b14",
+                        "on-tertiary-container": "#fffbff",
+                        "inverse-on-surface": "#f5f0ec",
+                        "on-background": "#1d1b19",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#7a746a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "boxShadow": {
+                        "paper": "0px 2px 4px rgba(42, 40, 38, 0.05), 0px 1px 2px rgba(42, 40, 38, 0.1)",
+                        "floating": "0px 12px 32px rgba(42, 40, 38, 0.12), 0px 4px 8px rgba(42, 40, 38, 0.06)"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Fraunces"],
+                        "body-lg": ["Epilogue"],
+                        "label-mono": ["JetBrains Mono"],
+                        "body-sm": ["Epilogue"],
+                        "display-lg": ["Fraunces"],
+                        "body-md": ["Epilogue"],
+                        "headline-sm": ["Fraunces"],
+                        "button": ["Epilogue"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "button": ["15px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .canvas-grid {
+            background-color: #f4f0ea;
+            background-image: radial-gradient(#e8e3dc 1.5px, transparent 0);
+            background-size: 40px 40px;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .connection-line {
+            filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.05));
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden">
+<!-- Top Navigation Shell -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-lg py-sm bg-surface/90 dark:bg-surface-dim/90 backdrop-blur-md border-b border-outline-variant/20 shadow-floating">
+<div class="flex items-center gap-md">
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Aletheia Canvas</h1>
+<div class="hidden md:flex items-center gap-lg ml-xl">
+<a class="text-on-surface-variant dark:text-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200 font-body-md text-body-md" href="#">Workspace</a>
+<a class="text-on-surface-variant dark:text-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200 font-body-md text-body-md" href="#">Threads</a>
+<a class="text-on-surface-variant dark:text-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200 font-body-md text-body-md" href="#">Library</a>
+<a class="text-on-surface-variant dark:text-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200 font-body-md text-body-md" href="#">Timeline</a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="bg-surface-container-low border-none rounded-full pl-xl pr-md py-xs w-64 focus:ring-2 focus:ring-primary text-body-sm font-body-sm" placeholder="Search Canvas..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary px-md py-xs rounded-full font-button text-button hover:shadow-floating transition-all active:scale-95">Share</button>
+</div>
+</header>
+<!-- Side Navigation Bars -->
+<aside class="fixed left-0 top-0 h-full flex flex-col pt-24 pb-8 z-40 bg-surface-container-low dark:bg-surface-dim border-r border-outline-variant/30 shadow-paper rounded-r-xl w-[300px]">
+<div class="px-lg mb-lg">
+<h2 class="font-headline-sm text-headline-sm text-primary">Sources</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Active Workspace</p>
+</div>
+<nav class="flex-1 px-sm space-y-xs">
+<button class="w-full flex items-center gap-md px-md py-sm bg-primary-container text-on-primary-container rounded-lg font-bold translate-x-1 duration-150">
+<span class="material-symbols-outlined">book_5</span>
+<span class="font-label-mono text-label-mono">Sources</span>
+</button>
+<button class="w-full flex items-center gap-md px-md py-sm text-on-surface-variant dark:text-tertiary-fixed-dim hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined">database</span>
+<span class="font-label-mono text-label-mono">Library</span>
+</button>
+<button class="w-full flex items-center gap-md px-md py-sm text-on-surface-variant dark:text-tertiary-fixed-dim hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-mono text-label-mono">Recent</span>
+</button>
+<button class="w-full flex items-center gap-md px-md py-sm text-on-surface-variant dark:text-tertiary-fixed-dim hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined">grade</span>
+<span class="font-label-mono text-label-mono">Starred</span>
+</button>
+</nav>
+<div class="px-lg mt-auto">
+<button class="w-full py-sm border-2 border-primary text-primary rounded-lg font-button hover:bg-primary/5 transition-colors">Import File</button>
+</div>
+</aside>
+<aside class="fixed right-0 top-0 h-full flex flex-col pt-24 pb-8 z-40 bg-surface-container-low dark:bg-surface-dim border-l border-outline-variant/30 shadow-paper rounded-l-xl w-[360px]">
+<div class="px-lg mb-lg">
+<h2 class="font-headline-sm text-headline-sm text-secondary">Synthesis</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">AI Assistant</p>
+</div>
+<div class="flex-1 px-lg overflow-y-auto">
+<div class="bg-surface-container p-md rounded-xl mb-md border border-outline-variant/20 shadow-paper">
+<div class="flex items-center gap-sm mb-xs">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="font-label-mono text-label-mono uppercase">AI Synthesis</span>
+</div>
+<p class="text-body-sm font-body-sm leading-relaxed">I've analyzed the connection between your research on "Vellum Textures" and the "Analog Workspace" cards. There is a strong correlation in the tactile minimalism approach.</p>
+</div>
+<div class="space-y-sm">
+<div class="flex items-center gap-sm px-sm py-xs hover:bg-surface-container-high rounded-lg cursor-pointer">
+<span class="material-symbols-outlined text-outline">edit_note</span>
+<span class="font-label-mono text-label-mono">Recent Note: Materiality in UI</span>
+</div>
+</div>
+</div>
+<footer class="mt-auto px-lg pt-md border-t border-outline-variant/10">
+<div class="flex justify-around">
+<button class="flex flex-col items-center gap-xs text-on-surface-variant hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-mono text-[10px]">Settings</span>
+</button>
+<button class="flex flex-col items-center gap-xs text-on-surface-variant hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-mono text-[10px]">Help</span>
+</button>
+</div>
+</footer>
+</aside>
+<!-- Canvas Interface -->
+<main class="relative w-screen h-screen canvas-grid overflow-hidden">
+<!-- Canvas Connection Lines SVG Layer -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none z-10" xmlns="http://www.w3.org/2000/svg">
+<!-- Curved dashed line between two cards -->
+<path class="connection-line" d="M 520 350 Q 650 300 780 400" fill="none" stroke="#4CA871" stroke-dasharray="6,4" stroke-width="2"></path>
+<circle cx="520" cy="350" fill="#4CA871" r="4"></circle>
+<circle cx="780" cy="400" fill="#4CA871" r="4"></circle>
+</svg>
+<!-- Floating UI Elements -->
+<div class="absolute top-24 left-[320px] z-30">
+<button class="bg-surface p-sm rounded-full shadow-floating border border-outline-variant/20 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">menu_open</span>
+</button>
+</div>
+<div class="absolute top-24 right-[380px] z-30">
+<button class="bg-surface p-sm rounded-full shadow-floating border border-outline-variant/20 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">chat_bubble</span>
+</button>
+</div>
+<!-- Zoom Controls -->
+<div class="absolute bottom-10 right-[380px] z-30">
+<div class="flex items-center gap-sm bg-surface/90 backdrop-blur-md px-md py-xs rounded-full shadow-floating border border-outline-variant/30">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">remove</span>
+</button>
+<span class="font-label-mono text-label-mono text-on-surface-variant px-sm border-x border-outline-variant/20">100%</span>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+<!-- Document Cards Area -->
+<div class="relative w-full h-full">
+<!-- Cluster Halo Backdrop -->
+<div class="absolute top-[320px] left-[740px] w-[420px] h-[340px] bg-surface-dim/30 rounded-[40px] blur-2xl z-0 pointer-events-none"></div>
+<!-- Card 1: Vellum Research -->
+<article class="absolute top-[280px] left-[350px] w-80 bg-[#FCFBF8] rounded-xl shadow-paper border border-outline-variant/20 p-lg z-20 cursor-move hover:shadow-floating transition-shadow">
+<div class="flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-primary text-xl">description</span>
+<h3 class="font-headline-sm text-body-md font-bold text-on-surface">Vellum Textures</h3>
+</div>
+<div class="relative w-full h-32 mb-md bg-surface-container-low rounded-lg overflow-hidden border border-outline-variant/10">
+<img alt="Parchment texture" class="w-full h-full object-cover opacity-80" data-alt="A high-resolution, macro close-up of aged vellum paper showing intricate organic fibers and a warm oatmeal texture. The lighting is soft and directional, highlighting the tactile hills and valleys of the parchment surface. The overall aesthetic is minimalist and scholarly, with a palette of cream, beige, and subtle warm taupe tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA62b7kgo64UuzimuOzDgX-dMi2Jh6qlExHm5f452xsP5J7bWIvRLoEbqJ-rQRl2arnTY8CnXiwZnMRFLtmJcfG_Y-CdzlxA8qaKaJLA6CO7_hkeIjgtspVcHxmXefLW8cT3cx_8XPY2WTIvQXj9JS4gekC1m1BVEheG2DvmrUT985zuKP5L4d9T2C5Egw2lAAItNEX07IpOvfMp-wprKlqmL4-N3mdX_ZHXcVHIj6hrKSYNjPcQVb7Zgnw34mfWbEkCK2HhaAXtzU"/>
+</div>
+<p class="text-body-sm text-on-surface-variant line-clamp-3">The translucency of vellum offers a unique layering opportunity in digital space, simulating the stacking of physical papers.</p>
+<div class="mt-md flex flex-wrap gap-xs">
+<span class="bg-secondary/10 text-secondary font-label-mono text-[10px] px-xs py-0.5 rounded border border-secondary/20">MATERIAL</span>
+<span class="bg-primary/10 text-primary font-label-mono text-[10px] px-xs py-0.5 rounded border border-primary/20">ORGANIC</span>
+</div>
+</article>
+<!-- Card 2: Spatial Layouts -->
+<article class="absolute top-[420px] left-[780px] w-96 bg-[#FCFBF8] rounded-xl shadow-paper border border-outline-variant/20 p-lg z-20 cursor-move hover:shadow-floating transition-shadow rotate-1">
+<div class="flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-secondary text-xl" style="font-variation-settings: 'FILL' 1;">grid_view</span>
+<h3 class="font-headline-sm text-body-md font-bold text-on-surface">Spatial Layout Theory</h3>
+</div>
+<div class="space-y-md">
+<div class="flex gap-md">
+<div class="w-12 h-12 rounded-full bg-outline-variant/20 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant">ink_pen</span>
+</div>
+<p class="text-body-sm text-on-surface">A "No-Grid" canvas enables cognitive associations that standard lists suppress. Proximity equals relevance in the mind of the researcher.</p>
+</div>
+<div class="h-px bg-outline-variant/20"></div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-label-mono text-label-mono">Modified 2h ago</span>
+<span class="material-symbols-outlined text-lg">more_horiz</span>
+</div>
+</div>
+</article>
+<!-- Card 3: Overlapping Cluster Piece -->
+<article class="absolute top-[340px] left-[850px] w-72 bg-[#FCFBF8] rounded-xl shadow-paper border border-outline-variant/20 p-lg z-10 cursor-move hover:shadow-floating transition-shadow -rotate-2">
+<div class="flex items-center gap-sm mb-sm">
+<span class="material-symbols-outlined text-tertiary text-xl">attach_file</span>
+<h3 class="font-headline-sm text-body-sm font-bold text-on-surface">Reference: Miller (1956)</h3>
+</div>
+<p class="text-body-sm text-on-surface-variant italic">"The Magical Number Seven, Plus or Minus Two..."</p>
+<div class="mt-md p-xs bg-tertiary-fixed rounded-md border border-outline-variant/30 text-on-tertiary-fixed font-label-mono text-[11px] text-center">
+                    CORE_PRINCIPLE_A1
+                </div>
+</article>
+<!-- Card 4: Distant Idea -->
+<article class="absolute top-[120px] left-[920px] w-64 bg-[#FCFBF8]/80 backdrop-blur-sm rounded-xl shadow-paper border border-outline-variant/10 p-md z-0 cursor-move hover:shadow-floating transition-shadow opacity-60 hover:opacity-100">
+<div class="flex items-center justify-between mb-xs">
+<span class="font-label-mono text-[10px] text-outline">DRAFT</span>
+<span class="material-symbols-outlined text-sm text-outline">push_pin</span>
+</div>
+<h4 class="font-body-md font-bold text-on-surface-variant">Oatmeal Palette</h4>
+<p class="text-[12px] text-on-surface-variant mt-xs">Reducing blue light strain through warm surface tones.</p>
+</article>
+</div>
+</main>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-surface/95 backdrop-blur-md flex justify-around py-sm px-md z-50 border-t border-outline-variant/20">
+<button class="flex flex-col items-center gap-xs text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">grid_view</span>
+<span class="font-label-mono text-[10px]">Canvas</span>
+</button>
+<button class="flex flex-col items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined">book_5</span>
+<span class="font-label-mono text-[10px]">Sources</span>
+</button>
+<button class="flex flex-col items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined">psychology</span>
+<span class="font-label-mono text-[10px]">AI</span>
+</button>
+</nav>
+</body></html>
