@@ -362,6 +362,9 @@ async function runResearch(event) {
     if (result.warnings?.length) showToast(result.warnings[0]);
   } catch (error) {
     showToast(error.message);
+    if (/401|auth|sign.?in|unauthori/i.test(error.message)) {
+      clerk?.openSignIn({ afterSignInUrl: window.location.href, afterSignUpUrl: window.location.href });
+    }
   } finally {
     clearLoading();
   }
@@ -1511,7 +1514,19 @@ async function initClerkInstance() {
 
 async function ensureAuth() {
   if (clerk && clerk.user) return true;
-  if (clerk) { clerk.openSignIn({ afterSignInUrl: window.location.href, afterSignUpUrl: window.location.href }); return false; }
+  // If Clerk is still initializing, wait briefly (up to 2s) for user session
+  if (!clerk || !clerk.loaded) {
+    for (let i = 0; i < 20; i++) {
+      await new Promise((r) => setTimeout(r, 100));
+      if (clerk && clerk.user) return true;
+    }
+  }
+  if (clerk && clerk.user) return true;
+  if (clerk) {
+    showToast("Please sign in to research.");
+    clerk.openSignIn({ afterSignInUrl: window.location.href, afterSignUpUrl: window.location.href });
+    return false;
+  }
   showToast("Sign-in unavailable — reload the page and try again.");
   return false;
 }
