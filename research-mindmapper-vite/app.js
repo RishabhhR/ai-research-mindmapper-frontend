@@ -1008,7 +1008,7 @@ function loadResearch(research, animate = true) {
   elements.topic.value = research.topic;
   elements.depth.value = research.depth;
   elements.output.value = research.output;
-  elements.sessionBadge.textContent = research.id ? "Sync'd" : "Local";
+  elements.sessionBadge.textContent = research.session_id ? "Sync'd" : "No session";
   if (animate) setProgress(3);
   renderOutput(research);
   renderInsights(research);
@@ -1159,12 +1159,17 @@ async function copySummary() {
 async function askQuestion(event) {
   event.preventDefault();
   if (!await ensureAuth()) return;
-  if (!state.current?.session_id) {
-    showToast("Run backend research first");
-    return;
-  }
   const question = elements.question.value.trim();
   if (!question) return;
+
+  if (!state.current?.session_id) {
+    elements.topic.value = question;
+    syncResearchBtn();
+    showToast("Starting research on topic first…");
+    await runResearch(event);
+    if (!state.current?.session_id) return;
+  }
+
   elements.answer.innerHTML = '<div class="answer-card"><p>Searching evidence first...</p></div>';
   try {
     const data = await requestJson(`/api/sessions/${state.current.session_id}/ask`, {
