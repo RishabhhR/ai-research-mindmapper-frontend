@@ -2,7 +2,7 @@ import { Clerk } from "@clerk/clerk-js";
 import { inject } from "@vercel/analytics";
 inject();
 
-const API_BASE = "https://mindmapper-api-mu.vercel.app";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://mindmapper-api-mu.vercel.app";
 const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 let clerk = null;
@@ -200,8 +200,32 @@ function clearLoading() {
   setProgress(3);
 }
 
+function formatErrorMessage(data, status) {
+  if (!data) {
+    return status === 429 ? "Rate limit reached. Please wait a moment." : `Request failed: ${status}`;
+  }
+  if (typeof data.detail === "string" && data.detail.trim()) {
+    return data.detail;
+  }
+  if (Array.isArray(data.detail)) {
+    return data.detail.map((d) => d.msg || (typeof d === "string" ? d : JSON.stringify(d))).join("; ");
+  }
+  if (typeof data.message === "string" && data.message.trim()) {
+    return data.message;
+  }
+  if (typeof data.error === "string" && data.error.trim()) {
+    return data.error;
+  }
+  return status === 429 ? "Rate limit reached. Please wait a moment." : `Request failed: ${status}`;
+}
+
 async function requestJson(path, options = {}) {
-  const token = clerk ? await clerk.session?.getToken() : null;
+  let token = null;
+  try {
+    token = clerk ? await clerk.session?.getToken() : null;
+  } catch {
+    // Non-fatal token retrieval failure
+  }
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
@@ -211,7 +235,7 @@ async function requestJson(path, options = {}) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.detail || data.message || `Request failed: ${response.status}`);
+    throw new Error(formatErrorMessage(data, response.status));
   }
   return data;
 }
@@ -301,7 +325,12 @@ async function runResearch(event) {
         showToast(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB) — 8 MB max`);
         return;
       }
-      const uploadToken = clerk ? await clerk.session?.getToken() : null;
+      let uploadToken = null;
+      try {
+        uploadToken = clerk ? await clerk.session?.getToken() : null;
+      } catch {
+        // Non-fatal
+      }
       const source = await fetch(`${API_BASE}/api/sources`, {
         method: "POST",
         headers: {
@@ -312,7 +341,7 @@ async function runResearch(event) {
         body: await file.arrayBuffer(),
       }).then(async (response) => {
         const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.detail || "Upload failed");
+        if (!response.ok) throw new Error(formatErrorMessage(data, response.status));
         return data;
       });
       ensureSourceHasText(source);
@@ -344,14 +373,14 @@ function ensureSourceHasText(source) {
   throw new Error(warning);
 }
 
-function normalizeResearch(data) {
+function normalizeResearch(data = {}) {
   const nodes = Array.isArray(data.nodes) && data.nodes.length ? data.nodes : [];
   return {
     id: data.session_id || data.id || Date.now(),
     session_id: data.session_id || data.id || null,
-    topic: data.topic || elements.topic.value,
-    depth: data.depth || elements.depth.value,
-    output: data.output || elements.output.value,
+    topic: data.topic || elements.topic?.value || "Untitled",
+    depth: data.depth || elements.depth?.value || "Detailed",
+    output: data.output || elements.output?.value || "Mindmap",
     root: data.root || data.topic || "Research map",
     rootX: data.rootX || 40,
     rootY: data.rootY || 39,
@@ -363,14 +392,21 @@ function normalizeResearch(data) {
       const angle = (index / count) * Math.PI * 2 - Math.PI / 2;
       const fallbackX = 39 + 32 * Math.cos(angle);
       const fallbackY = 44 + 32 * Math.sin(angle);
-      const x = clampPct(node.x, fallbackX);
-      const y = clampPct(node.y, fallbackY);
+
+      const title = Array.isArray(node) ? node[0] : (node?.title || `Node ${index + 1}`);
+      const desc = Array.isArray(node) ? (node[1] || "") : (node?.description || node?.body || "");
+      const rawX = Array.isArray(node) ? node[2] : node?.x;
+      const rawY = Array.isArray(node) ? node[3] : node?.y;
+      const prov = Array.isArray(node) ? (node[4] || "ai_synthesized") : (node?.provenance || "ai_synthesized");
+
+      const x = clampPct(rawX, fallbackX);
+      const y = clampPct(rawY, fallbackY);
       return [
-        node.title || `Node ${index + 1}`,
-        node.description || node.body || "",
+        title || `Node ${index + 1}`,
+        desc || "",
         Math.round(x),
         Math.round(y),
-        node.provenance || "ai_synthesized",
+        prov || "ai_synthesized",
       ];
     }),
     insights: normalizeCards(data.insights),
@@ -387,22 +423,45 @@ function clampPct(value, fallback) {
 }
 
 function normalizeCards(cards = []) {
-  return cards.map((card) => [
-    card.title || "Insight",
-    card.body || card.description || "",
-    card.provenance || "ai_synthesized",
-  ]);
+  if (!Array.isArray(cards)) return [];
+  return cards.map((card) => {
+    if (Array.isArray(card)) {
+      return [
+        card[0] || "Insight",
+        card[1] || "",
+        card[2] || "ai_synthesized",
+      ];
+    }
+    return [
+      card?.title || "Insight",
+      card?.body || card?.description || "",
+      card?.provenance || "ai_synthesized",
+    ];
+  });
 }
 
 function normalizeSources(sources = []) {
-  return sources.map((source) => [
-    source.title || "Source",
-    source.type || "Reference",
-    source.confidence || "Medium",
-    source.body || source.snippet || source.url || "",
-    source.provenance || "source_grounded",
-    source.url || "",
-  ]);
+  if (!Array.isArray(sources)) return [];
+  return sources.map((source) => {
+    if (Array.isArray(source)) {
+      return [
+        source[0] || "Source",
+        source[1] || "Reference",
+        source[2] || "Medium",
+        source[3] || "",
+        source[4] || "source_grounded",
+        source[5] || "",
+      ];
+    }
+    return [
+      source?.title || "Source",
+      source?.type || "Reference",
+      source?.confidence || "Medium",
+      source?.body || source?.snippet || source?.url || "",
+      source?.provenance || "source_grounded",
+      source?.url || "",
+    ];
+  });
 }
 
 function renderMindmap(research) {
@@ -904,13 +963,14 @@ function renderHistory() {
       try {
         setLoading("Loading map...");
         const data = await requestJson(`/api/sessions/${id}`);
+        const sessionObj = data?.session || {};
         const sessionRaw = {
-          ...data.session,
-          session_id: data.session.id,
-          nodes: data.session.mindmap || [],
+          ...sessionObj,
+          session_id: sessionObj.id || id,
+          nodes: sessionObj.mindmap || sessionObj.nodes || [],
           // Merge stored web citations into the sources list so reloaded
           // maps keep their evidence stack.
-          sources: [...(data.sources || []), ...(data.session.citations || [])],
+          sources: [...(data.sources || []), ...(sessionObj.citations || [])],
         };
         loadResearch(normalizeResearch(sessionRaw), false);
         clearLoading();
@@ -1113,8 +1173,14 @@ async function askQuestion(event) {
       <article class="answer-card">
         ${badge(data.provenance)}
         <h3>${escapeHtml(question)}</h3>
-        <p>${escapeHtml(data.answer || "No answer returned.")}</p>
-        ${(data.citations || []).map((citation) => `<div class="mini-citation">${escapeHtml(citation.title || "Citation")}: ${escapeHtml(citation.snippet || citation.url || "")}</div>`).join("")}
+        ${(data.citations || []).map((citation) => {
+          if (typeof citation === "string") {
+            return `<div class="mini-citation">${escapeHtml(citation)}</div>`;
+          }
+          const cTitle = citation?.title || "Citation";
+          const cSnippet = citation?.snippet || citation?.url || "";
+          return `<div class="mini-citation">${escapeHtml(cTitle)}: ${escapeHtml(cSnippet)}</div>`;
+        }).join("")}
       </article>
     `;
     elements.question.value = "";
