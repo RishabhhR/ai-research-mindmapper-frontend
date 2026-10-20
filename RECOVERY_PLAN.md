@@ -34,4 +34,4 @@ Go API entrypoints, configuration, authentication, rate limiting, Turso HTTP cli
 - YouTube remains environment-dependent. The Vercel Go runtime does not include `yt-dlp`; the Docker image does. Supadata or another reliable transcript service may be needed for serverless deployment.
 - The extension bearer-key path can impersonate an installation if that key is distributed to clients. Replace it with server-verified identity before enabling it in production.
 
-The Go directory currently has no Git metadata; preserve its changes and attach it to a repository before expecting a GitHub sync. The frontend has a Git remote but its changes are uncommitted.
+The deployed Go changes are synchronized to the backend GitHub `main` branch at `529dd87`; the separate Go working directory is a local copy without Git metadata. The frontend is synchronized to GitHub `main` at `2783cf1`. Both Git-triggered production deployments reached Ready and the aliases passed the public smoke checks above.
