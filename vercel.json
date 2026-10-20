@@ -3,10 +3,7 @@
   "buildCommand": "cd research-mindmapper-vite && npm install && npm run build",
   "outputDirectory": "research-mindmapper-vite/dist",
   "framework": null,
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
+  "rewrites": [
+    { "source": "/canvas", "destination": "/canvas.html" }
   ]
 }

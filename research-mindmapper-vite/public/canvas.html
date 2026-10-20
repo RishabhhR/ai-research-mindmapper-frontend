@@ -277,6 +277,13 @@
     return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  function safeExternalUrl(value) {
+    try {
+      const url = new URL(String(value));
+      return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : '';
+    } catch { return ''; }
+  }
+
   /* ── Panel toggles ─────────────────────────── */
   const sidebar = document.getElementById('sidebar');
   const chatPanel = document.getElementById('chat-panel');
@@ -656,7 +663,7 @@
         const sess = data.session || {};
         s.summary = sess.summary || s.summary || '';
         s.nodes = sess.mindmap || [];
-        s.sources = [...(data.sources || []), ...(sess.citations || [])];
+        s.sources = [...(data.sources || []), ...(sess.sources || []), ...(sess.citations || [])];
         s.detailLoaded = true;
       } catch (err) {
         body.innerHTML = `<div class="max-w-[640px] mx-auto pt-md font-body text-body-md text-[#ba1a1a]">Could not load this session: ${escHtml(err.message)}</div>`;
@@ -676,8 +683,8 @@
     }).join('');
 
     const nodeItems = (sess.nodes || []).slice(0, 12).map((n, i) => {
-      const t = n.title || '';
-      const d = n.description || n.body || '';
+      const t = Array.isArray(n) ? (n[0] || '') : (n.title || '');
+      const d = Array.isArray(n) ? (n[1] || '') : (n.description || n.body || '');
       const accent = i % 2 === 0 ? 'border-primary' : 'border-secondary';
       return t ? `
         <div class="p-lg bg-surface-container-low rounded-xl border-l-4 ${accent} shadow-paper">
@@ -688,7 +695,7 @@
 
     const srcItems = (sess.sources || []).slice(0, 8).map(src => {
       const t = src.title || '';
-      const url = src.url || '';
+      const url = safeExternalUrl(src.url);
       const typ = src.source_type || src.type || '';
       return t ? `
         <div class="flex items-center gap-sm py-sm border-b border-outline-variant/10">
@@ -784,7 +791,7 @@
       hint.innerHTML = '<span class="material-symbols-outlined text-[12px]">link</span> Will import &amp; research this URL';
       icon.textContent = 'download';
     } else if (!currentSessionId) {
-      hint.innerHTML = '<span class="material-symbols-outlined text-[12px]">auto_awesome</span> Will research this topic on the web';
+      hint.innerHTML = '<span class="material-symbols-outlined text-[12px]">auto_awesome</span> Will create an AI overview; add sources for grounded answers';
       icon.textContent = 'travel_explore';
     } else {
       hint.innerHTML = '<span class="material-symbols-outlined text-[12px]">psychology</span> Question → ask AI · <b>/research &lt;topic&gt;</b> → new card';
@@ -835,7 +842,7 @@
       return { id: source.session_id, result };
     }
 
-    setStatus('Researching on the web…');
+    setStatus('Creating a topic overview…');
     const result = await requestJson('/api/research', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -918,9 +925,9 @@
       if (data.citations && data.citations.length) {
         citationsHtml = `<div class="flex gap-xs flex-wrap mt-xs">` +
           data.citations.slice(0, 3).map(c =>
-            c.url
-              ? `<a href="${escHtml(c.url)}" target="_blank" rel="noreferrer" class="px-sm py-xs bg-secondary/10 text-on-secondary-fixed-variant rounded text-[10px] font-mono hover:bg-secondary/20 transition-colors">${escHtml(c.title || 'Source')}</a>`
-              : `<span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">${escHtml(c.title || '')}</span>`
+            safeExternalUrl(c.url)
+              ? `<a href="${escHtml(safeExternalUrl(c.url))}" target="_blank" rel="noreferrer" class="px-sm py-xs bg-secondary/10 text-on-secondary-fixed-variant rounded text-[10px] font-mono hover:bg-secondary/20 transition-colors">${escHtml(c.title || 'Source')}${c.page ? ` · p. ${escHtml(c.page)}` : ''}</a>`
+              : `<span class="px-sm py-xs bg-surface-container text-on-surface-variant rounded text-[10px] font-mono">${escHtml(c.title || '')}${c.page ? ` · p. ${escHtml(c.page)}` : ''}</span>`
           ).join('') + '</div>';
       }
       addAiMessage(escHtml(data.answer || 'No answer returned.'), citationsHtml);
@@ -1023,19 +1030,28 @@
   document.getElementById('header-search').addEventListener('input', e => renderSidebar(e.target.value));
 
   /* ── Boot ──────────────────────────────────── */
-  let booted = false;
+  let bootedUserId;
   async function bootData() {
-    if (!isSignedIn()) { renderSidebar(); renderCanvasCards(); updateContextBadge(); return; }
-    if (booted) return;
-    booted = true;
+    const userId = clerkInstance?.user?.id || null;
+    if (bootedUserId === userId) return;
+    bootedUserId = userId;
+    Object.keys(sessionCache).forEach(id => delete sessionCache[id]);
+    sessionOrder = [];
+    currentSessionId = null;
+    readerIndex = -1;
+    closeReader();
+    msgs.innerHTML = '';
+    if (!userId) { renderSidebar(); renderCanvasCards(); updateContextBadge(); return; }
     try {
       const data = await requestJson('/api/sessions');
+      if (bootedUserId !== userId) return;
       (data.sessions || []).forEach(s => {
         sessionCache[s.id] = { ...s, detailLoaded: false };
       });
       sessionOrder = (data.sessions || []).map(s => s.id);
       currentSessionId = sessionOrder[0] || null;
     } catch (err) {
+      if (bootedUserId !== userId) return;
       console.error('Failed to load sessions:', err);
       addAiMessage(`<span class="text-[#ba1a1a]">⚠ Could not load your research library: ${escHtml(err.message)}</span>`);
     }

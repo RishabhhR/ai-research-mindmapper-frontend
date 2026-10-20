@@ -385,8 +385,8 @@ function normalizeResearch(data = {}) {
     depth: data.depth || elements.depth?.value || "Detailed",
     output: data.output || elements.output?.value || "Mindmap",
     root: data.root || data.topic || "Research map",
-    rootX: data.rootX || 40,
-    rootY: data.rootY || 39,
+    rootX: data.rootX ?? data.root_x ?? 40,
+    rootY: data.rootY ?? data.root_y ?? 39,
     summary: data.summary || "No summary returned.",
     nodes: nodes.map((node, index) => {
       // Honor stored/LLM positions; fall back to a circle layout only when
@@ -401,6 +401,7 @@ function normalizeResearch(data = {}) {
       const rawX = Array.isArray(node) ? node[2] : node?.x;
       const rawY = Array.isArray(node) ? node[3] : node?.y;
       const prov = Array.isArray(node) ? (node[4] || "ai_synthesized") : (node?.provenance || "ai_synthesized");
+      const parentId = Array.isArray(node) ? node[5] : node?.parent_id;
 
       const x = clampPct(rawX, fallbackX);
       const y = clampPct(rawY, fallbackY);
@@ -410,6 +411,7 @@ function normalizeResearch(data = {}) {
         Math.round(x),
         Math.round(y),
         prov || "ai_synthesized",
+        parentId ?? "root",
       ];
     }),
     insights: normalizeCards(data.insights),
@@ -420,6 +422,7 @@ function normalizeResearch(data = {}) {
 }
 
 function clampPct(value, fallback) {
+  if (value == null || value === "") return fallback;
   const n = Number(value);
   if (!Number.isFinite(n)) return fallback;
   return Math.max(0, Math.min(92, n));
@@ -445,7 +448,7 @@ function normalizeCards(cards = []) {
 
 function normalizeSources(sources = []) {
   if (!Array.isArray(sources)) return [];
-  return sources.map((source) => {
+  const normalized = sources.map((source) => {
     if (Array.isArray(source)) {
       return [
         source[0] || "Source",
@@ -458,20 +461,27 @@ function normalizeSources(sources = []) {
     }
     return [
       source?.title || "Source",
-      source?.type || "Reference",
+      source?.source_type || source?.type || "Reference",
       source?.confidence || "Medium",
       source?.body || source?.snippet || source?.url || "",
       source?.provenance || "source_grounded",
       source?.url || "",
     ];
   });
+  const bySource = new Map();
+  for (const source of normalized) {
+    const key = `${String(source[0]).toLowerCase()}|${String(source[5]).toLowerCase()}`;
+    const previous = bySource.get(key);
+    if (!previous || String(source[3]).length > String(previous[3]).length) bySource.set(key, source);
+  }
+  return [...bySource.values()];
 }
 
 function renderMindmap(research) {
   elements.workspace.innerHTML = "";
   state.nodeElements = [];
   
-  const root = createNode("root", research.root, research.summary, research.rootX || 40, research.rootY || 39, true, "ai_synthesized");
+  const root = createNode("root", research.root, research.summary, research.rootX ?? 40, research.rootY ?? 39, true, "ai_synthesized");
   elements.workspace.appendChild(root);
   state.rootElement = root;
 
@@ -627,6 +637,7 @@ async function expandNode(id, title) {
           topic: title,
           depth: "Basic",
           output: "Mindmap",
+          persist: false,
         }),
       });
     } else {
@@ -653,8 +664,8 @@ async function expandNode(id, title) {
     
     newNodes.forEach((node, index) => {
       const angle = (index / count) * Math.PI * 2;
-      const x = parentX + 22 * Math.cos(angle);
-      const y = parentY + 22 * Math.sin(angle);
+      const x = Math.max(0, Math.min(92, parentX + 22 * Math.cos(angle)));
+      const y = Math.max(0, Math.min(92, parentY + 22 * Math.sin(angle)));
       
       state.current.nodes.push([
         node.title || `Sub-node ${index + 1}`,
@@ -673,6 +684,7 @@ async function expandNode(id, title) {
     renderInsights(state.current);
     renderSources(state.current);
     saveCurrentResearch(false);
+    await persistCurrentMap();
     showToast(`Expanded ${title}`);
     
   } catch (error) {
@@ -746,8 +758,8 @@ function openNodeDetail(id, title, description, provenance) {
        ${related.map(([srcTitle, type, , , , url]) => `
          <div class="node-modal-source-chip">
            <span class="node-modal-source-dot"></span>
-           <span>${url
-             ? `<a href="${escapeAttr(url)}" target="_blank" rel="noreferrer">${escapeHtml(srcTitle)}</a>`
+           <span>${safeExternalUrl(url)
+             ? `<a href="${escapeAttr(safeExternalUrl(url))}" target="_blank" rel="noreferrer">${escapeHtml(srcTitle)}</a>`
              : escapeHtml(srcTitle)}
              <span style="color:var(--text-muted);font-size:.75rem"> · ${escapeHtml(type)}</span>
            </span>
@@ -834,7 +846,7 @@ _modal.qaForm.addEventListener("submit", async e => {
       const cites = document.createElement("div");
       cites.style.cssText = "font-size:.75rem;color:var(--text-muted);padding:2px 4px;";
       cites.innerHTML = data.citations.slice(0, 2).map(c =>
-        c.url ? `<a href="${escapeAttr(c.url)}" target="_blank" rel="noreferrer" style="color:var(--secondary)">${escapeHtml(c.title || "Source")}</a>`
+        safeExternalUrl(c.url) ? `<a href="${escapeAttr(safeExternalUrl(c.url))}" target="_blank" rel="noreferrer" style="color:var(--secondary)">${escapeHtml(c.title || "Source")}</a>`
               : escapeHtml(c.title || "")
       ).join(" · ");
       bubble.appendChild(cites);
@@ -896,7 +908,7 @@ function renderSources(research) {
             <span>${escapeHtml(confidence)} confidence</span>
           </div>
           <div>
-            <h3>${url ? `<a href="${escapeAttr(url)}" target="_blank" rel="noreferrer">${escapeHtml(title)}</a>` : escapeHtml(title)}</h3>
+            <h3>${safeExternalUrl(url) ? `<a href="${escapeAttr(safeExternalUrl(url))}" target="_blank" rel="noreferrer">${escapeHtml(title)}</a>` : escapeHtml(title)}</h3>
             <p>${escapeHtml(body)}</p>
           </div>
           ${badge(provenance)}
@@ -934,8 +946,10 @@ function cleanupLegacyLocalStorage() {
 }
 
 async function loadHistory() {
+  const requestedUserId = clerk?.user?.id;
   try {
     const data = await requestJson("/api/sessions");
+    if (requestedUserId !== clerk?.user?.id) return;
     state.history = data.sessions || [];
     renderHistory();
   } catch (err) {
@@ -973,7 +987,7 @@ function renderHistory() {
           nodes: sessionObj.mindmap || sessionObj.nodes || [],
           // Merge stored web citations into the sources list so reloaded
           // maps keep their evidence stack.
-          sources: [...(data.sources || []), ...(sessionObj.citations || [])],
+          sources: [...(data.sources || []), ...(sessionObj.sources || []), ...(sessionObj.citations || [])],
         };
         loadResearch(normalizeResearch(sessionRaw), false);
         clearLoading();
@@ -994,6 +1008,7 @@ function renderHistory() {
       try {
         await requestJson(`/api/sessions/${id}`, { method: "DELETE" });
         state.history = state.history.filter((item) => String(item.id) !== String(id));
+        if (String(state.current?.session_id) === String(id)) clearCurrentResearch();
         renderHistory();
         showToast("Map deleted");
       } catch (err) {
@@ -1001,6 +1016,16 @@ function renderHistory() {
       }
     });
   });
+}
+
+function clearCurrentResearch() {
+  state.current = null;
+  state.nodeElements = [];
+  state.rootElement = null;
+  for (const element of [elements.workspace, elements.answer, elements.insights, elements.sources, elements.tradeoffs]) {
+    element.innerHTML = "";
+  }
+  elements.sessionBadge.textContent = "No session";
 }
 
 function loadResearch(research, animate = true) {
@@ -1063,7 +1088,7 @@ function renderReport(research, container) {
       </div>
     </div>`;
   container.querySelectorAll(".report-section[data-src-url]").forEach(el => {
-    el.addEventListener("click", () => window.open(el.dataset.srcUrl, "_blank", "noreferrer"));
+    el.addEventListener("click", () => { const url = safeExternalUrl(el.dataset.srcUrl); if (url) window.open(url, "_blank", "noreferrer"); });
   });
 }
 
@@ -1085,7 +1110,7 @@ function renderComparison(research, container) {
       </div>
     </div>`;
   container.querySelectorAll(".comparison-card[data-src-url]").forEach(el => {
-    el.addEventListener("click", () => window.open(el.dataset.srcUrl, "_blank", "noreferrer"));
+    el.addEventListener("click", () => { const url = safeExternalUrl(el.dataset.srcUrl); if (url) window.open(url, "_blank", "noreferrer"); });
   });
 }
 
@@ -1114,7 +1139,7 @@ function renderBullets(research, container) {
       </div>
     </div>`;
   container.querySelectorAll(".bullet-item[data-src-url]").forEach(el => {
-    el.addEventListener("click", () => window.open(el.dataset.srcUrl, "_blank", "noreferrer"));
+    el.addEventListener("click", () => { const url = safeExternalUrl(el.dataset.srcUrl); if (url) window.open(url, "_blank", "noreferrer"); });
   });
 }
 
@@ -1130,9 +1155,27 @@ function escapeHtml(value) {
 
 function saveCurrentResearch(show = true) {
   if (!state.current) return;
-  state.history = [state.current, ...state.history.filter((item) => item.id !== state.current.id)].slice(0, 15);
+  state.history = [state.current, ...state.history.filter((item) => item.id !== state.current.id)];
   renderHistory();
   if (show) showToast("Research map saved");
+}
+
+async function persistCurrentMap() {
+  const research = state.current;
+  if (!research?.session_id) return;
+  await requestJson(`/api/sessions/${research.session_id}/map`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      nodes: research.nodes.map(([title, description, x, y, provenance, parentId]) => ({
+        title, description, x, y, provenance, parent_id: String(parentId ?? "root"),
+      })),
+      insights: research.insights.map(([title, body, provenance]) => ({ title, body, provenance })),
+      sources: research.sources.map(([title, type, confidence, body, provenance, url]) => ({ title, type, confidence, body, provenance, url })),
+      root_x: research.rootX,
+      root_y: research.rootY,
+    }),
+  });
 }
 
 async function copySummary() {
@@ -1181,11 +1224,12 @@ async function askQuestion(event) {
       <article class="answer-card">
         ${badge(data.provenance)}
         <h3>${escapeHtml(question)}</h3>
+        <p>${escapeHtml(data.answer || "No answer returned.")}</p>
         ${(data.citations || []).map((citation) => {
           if (typeof citation === "string") {
             return `<div class="mini-citation">${escapeHtml(citation)}</div>`;
           }
-          const cTitle = citation?.title || "Citation";
+          const cTitle = `${citation?.title || "Citation"}${citation?.page ? `, p. ${citation.page}` : ""}`;
           const cSnippet = citation?.snippet || citation?.url || "";
           return `<div class="mini-citation">${escapeHtml(cTitle)}: ${escapeHtml(cSnippet)}</div>`;
         }).join("")}
@@ -1226,7 +1270,7 @@ function findNodeSource(title, description, sources) {
   let best = null, bestScore = 0;
   for (const src of (sources || [])) {
     const [srcTitle, , , body, , url] = src;
-    if (!url) continue;
+    if (!safeExternalUrl(url)) continue;
     const hay = `${srcTitle} ${body}`.toLowerCase();
     const score = terms.reduce((n, t) => n + (hay.includes(t) ? 1 : 0), 0);
     if (score > bestScore) { bestScore = score; best = src; }
@@ -1243,7 +1287,7 @@ function sourceBlock(nodeTitle, nodeBody, sources) {
     ${snippet ? `<p class="report-source-snippet">${escapeHtml(snippet)}</p>` : ""}
     <span class="report-source-link">Read more — ${escapeHtml(srcTitle)} ↗</span>
   </div>`;
-  return { html, url };
+  return { html, url: safeExternalUrl(url) };
 }
 
 function showToast(message) {
@@ -1257,6 +1301,15 @@ function showToast(message) {
 
 function escapeAttr(value) {
   return escapeHtml(value).replaceAll("`", "&#096;");
+}
+
+function safeExternalUrl(value) {
+  try {
+    const url = new URL(String(value));
+    return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
+  } catch {
+    return "";
+  }
 }
 
 function setMode(mode) {
@@ -1359,6 +1412,7 @@ document.addEventListener("mouseup", () => {
         state.current.nodes[id][3] = parseFloat(draggedNode.style.top);
       }
       saveCurrentResearch(false);
+      persistCurrentMap().catch((err) => showToast(`Could not save map layout: ${err.message}`));
     }
     draggedNode = null;
   }
@@ -1413,23 +1467,29 @@ window.addEventListener("resize", () => {
 
 elements.form.addEventListener("submit", runResearch);
 elements.qaForm.addEventListener("submit", askQuestion);
-elements.save.addEventListener("click", () => saveCurrentResearch(true));
+elements.save.addEventListener("click", async () => {
+  if (!state.current?.session_id) { showToast("Run research before saving a map."); return; }
+  try {
+    await persistCurrentMap();
+    saveCurrentResearch(true);
+  } catch (err) {
+    showToast(`Could not save map: ${err.message}`);
+  }
+});
 elements.copy.addEventListener("click", copySummary);
 elements.clearHistory.addEventListener("click", async () => {
   if (!state.history.length) return;
-  if (!confirm(`Delete all ${state.history.length} saved maps permanently?`)) return;
-  const ids = state.history.map((item) => item.id).filter(Boolean);
-  let failed = 0;
+  if (!confirm("Delete all saved maps permanently?")) return;
   showToast("Deleting maps…");
-  for (const id of ids) {
-    try {
-      await requestJson(`/api/sessions/${id}`, { method: "DELETE" });
-    } catch {
-      failed += 1;
-    }
+  try {
+    await requestJson("/api/sessions", { method: "DELETE" });
+    state.history = [];
+    clearCurrentResearch();
+    renderHistory();
+    showToast("All maps deleted");
+  } catch (err) {
+    showToast(`Could not delete maps: ${err.message}`);
   }
-  await loadHistory();
-  showToast(failed ? `Deleted with ${failed} error(s)` : "All maps deleted");
 });
 
 elements.modeTabs.forEach((tab) => tab.addEventListener("click", () => setMode(tab.dataset.mode)));
@@ -1545,7 +1605,7 @@ async function initAuth() {
       userBtnEl.innerHTML = `
         <div style="display:flex;align-items:center;gap:.6rem">
           <div id="clerk-user-btn"></div>
-          <span style="font-size:.75rem;color:var(--text-muted,#888);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0">${email}</span>
+          <span style="font-size:.75rem;color:var(--text-muted,#888);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0">${escapeHtml(email)}</span>
         </div>`;
       clerk.mountUserButton(document.getElementById("clerk-user-btn"));
       userBtnEl._mounted = true;
@@ -1569,7 +1629,22 @@ async function initAuth() {
       renderSignInBtn();
     }
 
+    let activeUserId = clerk.user?.id || null;
     clerk.addListener(async ({ user }) => {
+      const nextUserId = user?.id || null;
+      if (nextUserId !== activeUserId) {
+        state.history = [];
+        state.current = null;
+        renderHistory();
+        elements.workspace.innerHTML = "";
+        elements.answer.innerHTML = "";
+        elements.insights.innerHTML = "";
+        elements.sources.innerHTML = "";
+        elements.tradeoffs.innerHTML = "";
+        elements.sessionBadge.textContent = "No session";
+        activeUserId = nextUserId;
+        userBtnEl._mounted = false;
+      }
       if (user) {
         mountUserBtn();
         await loadHistory();
@@ -1594,19 +1669,19 @@ loadResearch({
   root: "AI Research Mindmapper",
   summary: "Submit a search query, URL, YouTube link, or TXT/PDF file to generate a cited research map.",
   nodes: [
-    ["Search", "Use Groq Compound web search for broad research.", 8, 11, "web_enriched"],
+    ["Topic overview", "Create an AI overview, or import sources for grounded research.", 8, 11, "ai_synthesized"],
     ["Evidence", "Upload or ingest sources before synthesis.", 70, 12, "source_grounded"],
     ["Synthesis", "Convert findings into insights and trade-offs.", 8, 58, "ai_synthesized"],
     ["Q&A", "Ask follow-ups against stored evidence first.", 70, 58, "source_grounded"],
     ["Traceability", "Keep source-backed and AI-generated content labeled.", 39, 78, "ai_synthesized"],
   ],
   insights: [
-    ["Backend ready", "The UI now calls FastAPI endpoints instead of local mock profiles.", "ai_synthesized"],
-    ["Evidence-first answers", "Follow-up questions search stored chunks before web expansion.", "source_grounded"],
+    ["Evidence first", "Import a URL, TXT, or PDF to ground the map in source text.", "ai_synthesized"],
+    ["Follow-up answers", "Questions use stored source excerpts when available.", "ai_synthesized"],
   ],
   sources: [],
   tradeoffs: [
-    ["Free-tier usage", "Groq is used only when generation or web search is needed.", "ai_synthesized"],
+    ["Source coverage", "A topic overview has no verified citations until sources are imported.", "ai_synthesized"],
   ],
   createdAt: new Date().toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
 }, false);
